@@ -1,0 +1,25 @@
+Niche:
+-Climb Again Arad
+	-Cum îl chema pe fostul proprietar? -Ionathan
+-Parcul Zona 300
+	-Câte mese de șah sunt în parc? - 3
+-Agora Mall
+	-Ce se desfășoară în subsolul mallului? - Karting
+-Stadionul Gloria
+	-Ce sport se poate practica în interiorul traseului de alergat? - Aruncarea Ciocanului
+
+Affiliate:
+-Banca Transilvaniei Arad
+	-Câte ATM-uri sunt la intrare? -2
+-Facultatea Aurel Vlaicu, Corp M
+	-Ce concurs s-a susținut aici și a dus la realizarea acestui proiect? - HACK4ARAD
+
+Producatori locali:
+-Langoșeria Felix
+	-Cum îl cheamă pe fiul lui Felix? - Felix
+-Prăvălia Danei
+	-Cu cine e vecină? - Felix 
+-Piața Mihai Viteazu
+	-Care este produsul predominant vândut? - Florile
+-Ar Ski Shop
+	-Pentru ce sunt cunoscuți? - prețuri accesibile

@@ -16,12 +16,13 @@ export const DATA = {
 };
 
 // A stop is revealed and unlocked at or below this distance (metres).
-export const DEFAULT_RADIUS = 300;
+export const DEFAULT_RADIUS = 120;
 // Below this distance the route panel says "You're here".
 export const ARRIVED_METERS = 25;
 // Map centre before any position is known.
 export const START = [46.1765, 21.3216];
 
+// In dark mode js/map.js swaps the CARTO style 'rastertiles/voyager' for 'dark_all'.
 export const TILES = {
   url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_543n_1_cd756e9b5676b81ffed0bc5c',
   options: {
@@ -52,5 +53,12 @@ export const MAP_COLORS = {
   ring: '#2b38b8',
   accuracy: '#2b38b8',
   user: '#d4141c',
+};
+// Lighter blue so the route stays visible on the dark map.
+export const MAP_COLORS_DARK = {
+  route: '#7d89ff',
+  ring: '#7d89ff',
+  accuracy: '#7d89ff',
+  user: '#ff4a52',
 };
 

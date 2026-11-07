@@ -16,6 +16,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 /* ===================== STATE ===================== */
 const S = {
   places: [], path: [], byId: new Map(),
+  routes: [], sidequests: [], sidequestIds: [], selectedRouteId: null,
   user: null, store: null,
   prog: { discovered: [], completed: [] },
   radius: DEFAULT_RADIUS,
@@ -31,15 +32,21 @@ let map = null;
 const place = id => S.byId.get(id);
 const isDisc = id => S.prog.discovered.includes(id);
 const isDone = id => S.prog.completed.includes(id);
+const isSideQuest = id => S.sidequestIds.includes(id);
 // The first stop on the path whose trivia isn't finished yet.
 function activeIndex() {
   const i = S.path.findIndex(id => !(isDisc(id) && isDone(id)));
   return i < 0 ? S.path.length : i;
 }
 const activeId = () => S.path[activeIndex()] || null;
-const isVisible = id => { const i = S.path.indexOf(id); return i >= 0 && (S.showAllShadows || i <= activeIndex()); };
+// Side quests exist on the map and in the list only while the player is within the radius.
+const isVisible = id => {
+  if (isSideQuest(id)) return inRadius(place(id));
+  const i = S.path.indexOf(id);
+  return i >= 0 && (S.showAllShadows || i <= activeIndex());
+};
 const stopNo = id => S.path.indexOf(id) + 1;
-const displayName = p => isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
+const displayName = p => isSideQuest(p.id) || isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
 const distTo = p => S.pos ? haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) : null;
 const inRadius = p => { const d = distTo(p); return d !== null && d <= S.radius; };
 // Directions always point at the current stop, unless the user picked a finished stop to revisit.
@@ -51,8 +58,10 @@ let screen = 'loading';
 function showScreen(name) {
   if (screen === 'minigame' && name !== 'minigame') unmountMinigame();
   screen = name;
-  ['loading', 'welcome', 'app', 'minigame', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
-  $('#hdrRight').hidden = name !== 'app' && name !== 'minigame';
+  ['loading', 'welcome', 'routeSelect', 'app', 'minigame', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
+  $('#hdrRight').hidden = !['app', 'minigame', 'routeSelect'].includes(name);
+  document.body.dataset.screen = name;
+  setPanel('');
   $('#minigameBtn').classList.toggle('active', name === 'minigame');
   closeMenu();
   window.scrollTo(0, 0);
@@ -99,7 +108,7 @@ function setBusy(on, label) {
 }
 
 function renderWelcome() {
-  $('#stopCount').textContent = S.path.length;
+  $('#stopCount').textContent = S.routes.length ? Math.max(...S.routes.map(r => r.locationIds.length)) : '–';
   setAuthMode(authMode === 'recovery' ? 'recovery' : 'login');
 }
 
@@ -165,6 +174,39 @@ function toggleMenu(force) {
 }
 const closeMenu = () => toggleMenu(false);
 
+// Rough on-foot estimate for a route: straight-line legs × 1.3 for streets,
+// 4.5 km/h walking, plus a few minutes at each stop for the story and questions.
+function routeEstimate(route) {
+  const pts = route.locationIds.map(place);
+  let m = 0;
+  for (let i = 1; i < pts.length; i++) m += haversine(pts[i - 1].lat, pts[i - 1].lon, pts[i].lat, pts[i].lon);
+  m *= 1.3;
+  const min = Math.round(m / 75 + pts.length * 4);
+  const km = (m / 1000).toFixed(1).replace('.', ',');
+  return { km, time: min >= 60 ? Math.floor(min / 60) + ' h ' + String(min % 60).padStart(2, '0') + ' min' : min + ' min' };
+}
+
+function renderRouteChoices() {
+  const current = S.selectedRouteId;
+  $('#rsBack').hidden = !current || !map;
+  $('#routeChoices').innerHTML = S.routes.map((route, i) => {
+    const est = routeEstimate(route), n = route.locationIds.length;
+    const done = route.locationIds.filter(id => isDone(id)).length;
+    const cur = route.id === current;
+    const action = cur ? 'Continuă' : done ? 'Reia' : 'Începe';
+    return `<li><button class="rs-item ${cur ? 'cur' : ''}" data-act="chooseRoute" data-route="${esc(route.id)}">
+      <span class="rs-num c${i % 3}">${i + 1}</span>
+      <span class="rs-body">
+        <span class="rs-title">${esc(route.name)}${cur ? '<span class="tag cur">Traseul tău</span>' : ''}</span>
+        <span class="rs-desc">${esc(route.description || 'Descoperă locuri importante din Arad.')}</span>
+        <span class="rs-meta">${n} opriri · ≈ ${est.km} km · ~${est.time}</span>
+        ${done ? `<span class="rs-prog"><span class="rs-bar"><i style="width:${Math.round(done / n * 100)}%"></i></span>${done}/${n}</span>` : ''}
+      </span>
+      <span class="rs-go">${action} <span aria-hidden="true">→</span></span>
+    </button></li>`;
+  }).join('');
+}
+
 function enterApp(user) {
   S.user = user;
   S.store = createUserStore(user.id);
@@ -172,14 +214,30 @@ function enterApp(user) {
   S.prog.discovered = S.prog.discovered.filter(id => S.byId.has(id));
   S.prog.completed = S.prog.completed.filter(id => S.byId.has(id));
   S.quizzes = {}; S.revisitId = null; S.sheetId = null;
-  clearRoute(); listSig = '';
   $('#userName').textContent = user.name;
+  S.selectedRouteId = null;
+  const saved = S.store.getRoute();
+  if (saved && S.routes.some(r => r.id === saved)) startSelectedRoute(saved);
+  else { renderRouteChoices(); showScreen('routeSelect'); }
+}
+
+function startSelectedRoute(routeId) {
+  const route = S.routes.find(r => r.id === routeId);
+  if (!route || !S.user) return;
+  const switching = S.selectedRouteId !== route.id;
+  S.selectedRouteId = route.id;
+  S.store.setRoute(route.id);
+  S.path = [...route.locationIds];
+  S.sidequestIds = S.sidequests.map(q => q.id);
+  S.revisitId = null; S.sheetId = null; S.quizzes = {};
+  clearRoute(); listSig = '';
   showScreen('app');
   if (!map) initMap(); else { map.clearStops(); map.refresh(); }
+  buildTeleportButtons();
   updateAll();
-  fitTrail();
-  startGPS();
-  syncFromAccount(user);
+  if (switching) fitTrail();
+  if (S.watchId === null) startGPS();
+  syncFromAccount(S.user);
 }
 
 // Brings the account's saved scores onto this device. On a device that has
@@ -204,6 +262,46 @@ async function syncFromAccount(user) {
   }
 }
 
+/* ===================== PHONE LAYOUT ===================== */
+// Same breakpoint as the phone section in css/styles.css.
+const MOBILE_MQ = window.matchMedia('(max-width: 760px), (orientation: portrait) and (max-width: 1024px)');
+const isMobile = () => MOBILE_MQ.matches;
+
+// Opens one pop-up panel on phones ('stops' | 'quests' | 'adv'), or closes them ('').
+function setPanel(name) {
+  ['stops', 'quests', 'adv'].forEach(n => document.body.classList.toggle('panel-' + n, n === name));
+  document.body.classList.toggle('panel-open', !!name);
+  ['Stops', 'Quests', 'Adv'].forEach(n => $('#dock' + n).classList.toggle('on', name === n.toLowerCase()));
+  if (name === 'adv') $('#devTools').open = true;
+}
+
+// Header height drives the phone layout (map fills the rest of the screen).
+function measureHeader() {
+  document.documentElement.style.setProperty('--hdr-h', $('.site-header').offsetHeight + 'px');
+}
+
+/* ===================== THEME ===================== */
+const THEME_KEY = 'arad-explorer:theme';
+const SYSTEM_DARK = window.matchMedia('(prefers-color-scheme: dark)');
+function isDark() {
+  const t = document.documentElement.dataset.theme;
+  return t ? t === 'dark' : SYSTEM_DARK.matches;
+}
+function applyTheme() {
+  const dark = isDark();
+  document.documentElement.classList.toggle('is-dark', dark);
+  $('#themeBtn').setAttribute('aria-label', dark ? 'Activează modul luminos' : 'Activează modul întunecat');
+  $('#themeBtn').title = dark ? 'Mod luminos' : 'Mod întunecat';
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#070a26' : '#0b0f3a';
+  if (map) map.setTheme(dark);
+}
+function toggleTheme() {
+  const next = isDark() ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem(THEME_KEY, next); } catch { /* ignore */ }
+  applyTheme();
+}
+
 /* ===================== MAP ===================== */
 function initMap() {
   if (!window.L) {
@@ -212,6 +310,7 @@ function initMap() {
     return;
   }
   map = new TrailMap($('#map'), {
+    dark: isDark(),
     onMapClick: ll => { if (S.sim) { S.simPos = ll; setSim(true); } },
     onMarkerClick: id => openSheet(id),
     onTileError: () => { $('#mapMsg').hidden = false; $('#mapMsg').textContent = 'O parte din hartă nu s-a încărcat. Verifică conexiunea la internet.'; },
@@ -220,11 +319,16 @@ function initMap() {
 
 function syncMap() {
   if (!map) return;
-  map.setStops(S.path.filter(isVisible).map(id => {
+  const mainStops = S.path.filter(isVisible).map(id => {
     const p = place(id);
     if (!isDisc(id)) return { id, lat: p.lat, lon: p.lon, kind: 'shadow', no: stopNo(id), label: '', title: 'Loc nedescoperit' };
     return { id, lat: p.lat, lon: p.lon, kind: inRadius(p) ? 'on' : 'off', no: stopNo(id), label: p.short, title: p.name };
-  }));
+  });
+  const sideStops = S.sidequestIds.filter(isVisible).map(id => {
+    const p = place(id);
+    return { id, lat: p.lat, lon: p.lon, kind: 'side', no: isDone(id) ? '✓' : '★', label: p.short, title: 'Misiune secundară: ' + p.name };
+  });
+  map.setStops([...mainStops, ...sideStops]);
   map.setUser(S.pos, S.radius);
 }
 
@@ -233,14 +337,22 @@ function fitTrail() {
   const t = routeTargetId();
   const pts = t ? [[place(t).lat, place(t).lon]] : S.path.filter(isVisible).map(id => [place(id).lat, place(id).lon]);
   if (S.pos && t && haversine(S.pos.lat, S.pos.lon, pts[0][0], pts[0][1]) < 3000) pts.push([S.pos.lat, S.pos.lon]);
-  map.fitPoints(pts);
+  map.fitPoints(pts, 17, mapPadding());
 }
 
 function fitRoute() {
   if (!map) return;
   const r = routeState.data;
-  if (r && r.track.length) map.fitPoints(r.track);
+  if (r && r.track.length) map.fitPoints(r.track, 17, mapPadding());
   else fitTrail();
+}
+
+// On phones the progress chip and the directions card cover the top and
+// bottom of the map, so fitting leaves room for them.
+function mapPadding() {
+  if (!isMobile()) return undefined;
+  const card = $('#routeCard').getBoundingClientRect(), box = $('.mapbox').getBoundingClientRect();
+  return { top: 120, right: 64, bottom: Math.max(60, box.bottom - card.top + 16), left: 24 };
 }
 
 /* ===================== GPS ===================== */
@@ -285,14 +397,27 @@ function checkDiscovery() {
   if (!inRadius(p)) return;
   S.prog.discovered.push(id); saveProg();
   toast('Ai descoperit: ' + p.name + '!');
-  // A stop without trivia has nothing to answer, so it counts as done right away.
   if (!p.trivia.length) completeStop(id);
+}
+
+function checkSideQuestDiscovery() {
+  S.sidequestIds.forEach(id => {
+    if (isDisc(id)) return;
+    const p = place(id);
+    if (!inRadius(p)) return;
+    S.prog.discovered.push(id); saveProg();
+    toast('Ai găsit o misiune secundară: ' + p.name + '!');
+  });
 }
 
 // Called once per stop, when its trivia has been answered for the first time.
 function completeStop(id) {
   if (isDone(id)) return;
   S.prog.completed.push(id); saveProg();
+  if (isSideQuest(id)) {
+    toast('Misiune secundară completată: ' + place(id).name + '!');
+    return;
+  }
   S.revisitId = null;
   clearRoute();
   const next = activeId();
@@ -489,7 +614,30 @@ function renderList() {
 }
 
 function buildTeleportButtons() {
-  $('#tpBtns').innerHTML = S.path.map(id => `<button class="btn sm" data-act="tp" data-id="${id}">At ${esc(place(id).short)}</button>`).join('');
+  const ids = [...S.path, ...S.sidequestIds];
+  $('#tpBtns').innerHTML = ids.map(id => `<button class="btn sm" data-act="tp" data-id="${id}">At ${esc(place(id).short)}</button>`).join('');
+}
+
+function renderSideQuestList() {
+  const root = $('#sideQuestList');
+  if (!root) return;
+  const near = S.sidequestIds.filter(isVisible);
+  const doneCount = S.sidequestIds.filter(isDone).length, total = S.sidequestIds.length;
+  $('#sideQuestLead').textContent = (near.length
+    ? 'Ești lângă o misiune secundară. Nu schimbă progresul traseului principal.'
+    : `Nicio misiune secundară în apropiere. Ele apar doar când ești la cel mult ${S.radius} m de ele, așa că explorează orașul.`)
+    + (doneCount ? ` Completate: ${doneCount} din ${total}.` : '');
+  root.innerHTML = near.map(id => {
+    const p = place(id), done = isDone(id), d = distTo(p);
+    const tag = done ? '<span class="tag done">Completată</span>' : '<span class="tag cur">Aici</span>';
+    return `<li class="place on ${done ? 'done' : ''}">
+      <div class="num side">${done ? '✓' : '★'}</div>
+      <div class="pinfo"><strong>${esc(p.name)}</strong>${tag}<div class="sub2">${esc(p.kind || p.category)}</div><div class="status">${d < 25 ? 'Ești aici' : 'La ' + fmtDist(d)}</div></div>
+      <div class="pbtns"><button class="btn primary" data-act="open" data-id="${id}">Deschide</button></div>
+    </li>`;
+  }).join('');
+  const waiting = near.filter(id => !isDone(id)).length;
+  $('#questBadge').hidden = !waiting; $('#questBadge').textContent = waiting;
 }
 
 /* ===================== STOP SHEET ===================== */
@@ -512,7 +660,7 @@ function renderSheet() {
   const close = '<button class="x" data-act="close" aria-label="Închide">✕</button>';
   let h;
   if (mode === 'shadow') {
-    h = `<div class="sheet-head"><div><p class="kicker">Nedescoperit</p><h2>Oprirea misterioasă ${stopNo(p.id)}</h2></div>${close}</div>
+    h = `<div class="sheet-head"><div><p class="kicker">${isSideQuest(p.id) ? 'Misiune secundară' : 'Nedescoperit'}</p><h2>${isSideQuest(p.id) ? esc(p.name) : 'Oprirea misterioasă ' + stopNo(p.id)}</h2></div>${close}</div>
       <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Ascuns</span></div>
       <div class="lockmsg"><strong>Indiciu</strong><p>${esc(p.hint)}</p></div>
       <p class="muted">Apropie-te la ${S.radius} m de umbra de pe hartă ca să afli ce este.</p>${nav}`;
@@ -581,6 +729,12 @@ function renderQuiz() {
   const p = place(S.sheetId), box = $('#quiz'); if (!box) return;
   const q = S.quizzes[p.id], n = p.trivia.length, best = S.store.getBest(p.id);
   if (!n) { box.innerHTML = '<h3>Întrebări</h3><p class="muted">Încă nu sunt întrebări pentru acest loc.</p>'; return; }
+  if (p.trivia.every(t => t.placeholder)) {
+    const doneText = isDone(p.id) ? 'Această oprire provizorie este deja marcată ca parcursă.' : 'Întrebarea finală și variantele de răspuns urmează să fie adăugate.';
+    box.innerHTML = `<h3>Întrebare provizorie</h3><p class="qtext">${esc(p.trivia[0].q)}</p><p class="muted">${doneText}</p>`
+      + (isDone(p.id) ? '' : '<button class="btn primary" data-act="placeholderComplete">Continuă temporar</button>');
+    return;
+  }
   const bestTxt = best !== undefined ? `<p class="muted">Cel mai bun scor aici: ${best}/${n}</p>` : '';
   if (!q) {
     const lead = isDone(p.id) ? 'Ai terminat deja această oprire. Poți juca din nou pentru un scor mai bun.'
@@ -592,7 +746,9 @@ function renderQuiz() {
     const msg = q.score === n ? 'Scor perfect!' : q.score >= Math.ceil(n / 2) ? 'Bravo!' : 'Uită-te în jur și mai încearcă.';
     const next = activeId();
     let after = '';
-    if (q.unlocked && next) {
+    if (q.unlocked && isSideQuest(p.id)) {
+      after = '<div class="next">Misiunea secundară este completă. Traseul principal nu a fost modificat.</div>';
+    } else if (q.unlocked && next) {
       after = `<div class="next">Urmează oprirea ${stopNo(next)}: ${esc(displayName(place(next)))}. Drumul s-a actualizat pe hartă.</div>
         <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
     } else if (q.unlocked) after = '<div class="next">Ai terminat tot traseul. Felicitări!</div>';
@@ -613,6 +769,9 @@ function renderQuiz() {
 function quizAct(act, el) {
   const p = place(S.sheetId); if (!p || S.sheetMode !== 'full') return;
   const n = p.trivia.length;
+  if (act === 'placeholderComplete') {
+    completeStop(p.id); updateAll(); renderQuiz(); return;
+  }
   if (act === 'start' || act === 'again') { S.quizzes[p.id] = { i: 0, score: 0, chosen: null, done: false }; renderQuiz(); return; }
   const q = S.quizzes[p.id]; if (!q) return;
   if (act === 'opt' && q.chosen === null) {
@@ -647,14 +806,15 @@ function toast(msg) {
 function updateAll() {
   if (!S.user) return;
   checkDiscovery();
-  renderProgress(); renderStatus(); renderList(); syncMap(); renderRoute(); syncSheet();
+  checkSideQuestDiscovery();
+  renderProgress(); renderStatus(); renderList(); renderSideQuestList(); syncMap(); renderRoute(); syncSheet();
   maybeReroute();
 }
 
 function resetProgress() {
   if (!window.confirm('Sigur vrei să iei traseul de la capăt? Progresul și scorurile pentru „' + S.user.name + '” vor fi șterse.')) return;
   S.prog = { discovered: [], completed: [] }; saveProg();
-  S.store.clearBests(S.path);
+  S.store.clearBests([...S.path, ...S.sidequestIds]);
   S.quizzes = {}; S.revisitId = null;
   closeSheet(); clearRoute(); listSig = '';
   if (map) map.clearStops();
@@ -674,6 +834,11 @@ function bindEvents() {
     const act = el.dataset.act, id = el.dataset.id;
     switch (act) {
       case 'menu': toggleMenu(); break;
+      case 'routes': closeSheet(); renderRouteChoices(); showScreen('routeSelect'); break;
+      case 'theme': toggleTheme(); break;
+      case 'panel': setPanel(document.body.classList.contains('panel-' + el.dataset.panel) ? '' : el.dataset.panel); break;
+      case 'toggleroute': $('#routeCard').classList.toggle('open'); break;
+      case 'chooseRoute': startSelectedRoute(el.dataset.route); break;
       case 'minigame':
         if (screen === 'minigame') { showScreen('app'); map && map.refresh(); break; }
         closeSheet(); showScreen('minigame');
@@ -689,10 +854,13 @@ function bindEvents() {
       }
       case 'signout': closeMenu(); signOut(); break;
       case 'resetprog': closeMenu(); resetProgress(); break;
-      case 'open': if (isVisible(id)) openSheet(id); break;
+      case 'open': if (isVisible(id)) { setPanel(''); openSheet(id); } break;
       case 'revisit': if (isDone(id)) { S.revisitId = id; S.fitOnRoute = true; listSig = ''; if (S.sheetId) renderSheet(); updateAll(); } break;
       case 'follow': S.revisitId = null; S.fitOnRoute = true; listSig = ''; if (S.sheetId) renderSheet(); updateAll(); break;
-      case 'showroute': closeSheet(); fitRoute(); $('.mapbox').scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
+      case 'showroute':
+        closeSheet(); setPanel('');
+        if (!isMobile()) $('.mapbox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        fitRoute(); break;
       case 'close': closeSheet(); break;
       case 'start': case 'again': case 'opt': case 'next': quizAct(act, el); break;
       case 'rmphoto': { const p = place(S.sheetId); if (p) { S.store.removePhoto(p.id); renderPhoto(); } break; }
@@ -716,17 +884,27 @@ function bindEvents() {
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (S.sheetId) closeSheet(); else closeMenu();
+    if (S.sheetId) closeSheet();
+    else if (document.body.classList.contains('panel-open')) setPanel('');
+    else closeMenu();
   });
+  SYSTEM_DARK.addEventListener('change', applyTheme);
+  MOBILE_MQ.addEventListener('change', () => { setPanel(''); measureHeader(); map && map.refresh(); });
+  window.addEventListener('resize', measureHeader);
 }
 
 /* ===================== BOOT ===================== */
 async function boot() {
   bindEvents();
+  applyTheme();
+  measureHeader();
   showScreen('loading');
   try {
     const trail = await loadTrail();
-    S.places = trail.places; S.path = trail.path;
+    S.places = trail.places;
+    S.routes = trail.routes;
+    S.sidequests = trail.sidequests;
+    S.sidequestIds = trail.sidequests.map(q => q.id);
     S.byId = new Map(trail.places.map(p => [p.id, p]));
   } catch (e) {
     console.error(e);
@@ -736,7 +914,6 @@ async function boot() {
     showScreen('fatal');
     return;
   }
-  buildTeleportButtons();
   // A password-reset link opens the page in recovery mode.
   const toRecovery = () => { authMode = 'recovery'; S.user = null; stopGPS(); renderWelcome(); showScreen('welcome'); };
   auth.onPasswordRecovery(toRecovery);

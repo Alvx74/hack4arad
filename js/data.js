@@ -1,64 +1,34 @@
-// Loads the trail from the CSV database and turns rows into place objects.
-import { DATA } from './config.js';
-import { fetchCSV } from './csv.js';
-
-const LETTERS = ['a', 'b', 'c', 'd', 'e', 'f'];
-
-function toPlace(row, triviaRows, warn) {
-  const lat = parseFloat(row.lat), lon = parseFloat(row.lon);
-  if (!row.id || !row.name || isNaN(lat) || isNaN(lon)) {
-    throw new Error(`Location "${row.id || '?'}" needs id, name, lat and lon.`);
-  }
-  const trivia = [];
-  triviaRows.forEach((t, n) => {
-    const options = LETTERS.map(l => t['option_' + l]).filter(o => o !== undefined && o !== '');
-    const answer = LETTERS.indexOf((t.correct || '').trim().toLowerCase());
-    if (!t.question || options.length < 2 || answer < 0 || answer >= options.length) {
-      warn(`trivia/${row.id}.csv row ${n + 2} skipped: needs a question, 2+ options and a valid "correct" letter.`);
-      return;
-    }
-    trivia.push({ q: t.question, o: options, a: answer, e: t.explanation || '' });
-  });
-  return {
-    id: row.id,
-    name: row.name,
-    short: row.short_name || row.name,
-    category: row.category || '',
-    kind: row.kind || '',
-    address: row.address || '',
-    lat, lon,
-    hint: row.hint || 'Get closer to find out what this is.',
-    photo: row.photo || '',
-    photoCredit: row.photo_credit || '',
-    wikipedia: row.wikipedia || '',
-    text: (row.description || '').split(/\n\s*\n/).map(s => s.trim()).filter(Boolean),
-    trivia,
-  };
-}
-
-// Returns { places, path, warnings }.
+// Loads the three selectable trails and independent side quests from one JSON catalogue.
 export async function loadTrail() {
-  const warnings = [];
-  const warn = m => { warnings.push(m); console.warn('[data]', m); };
-
-  const pathRows = await fetchCSV(DATA.path);
-  const path = pathRows
-    .map(r => ({ order: parseFloat(r.order), id: r.location_id }))
-    .filter(r => r.id)
-    .sort((a, b) => (a.order || 0) - (b.order || 0))
-    .map(r => r.id);
-  if (!path.length) throw new Error('data/path.csv lists no locations.');
-
-  const places = await Promise.all(path.map(async id => {
-    const [loc] = await fetchCSV(DATA.location(id));
-    if (!loc) throw new Error(`data/locations/${id}.csv is empty.`);
-    if (loc.id !== id) warn(`locations/${id}.csv has id "${loc.id}"; using "${id}".`);
-    loc.id = id;
-    let triviaRows = [];
-    try { triviaRows = await fetchCSV(DATA.trivia(id)); }
-    catch (e) { warn(`No trivia file for "${id}" (${e.message}). The stop completes on discovery.`); }
-    return toPlace(loc, triviaRows, warn);
-  }));
-
-  return { places, path, warnings };
+  const res = await fetch('data/game-data.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error('data/game-data.json (HTTP ' + res.status + ')');
+  const data = await res.json();
+  if (!Array.isArray(data.routes) || !Array.isArray(data.places) || !Array.isArray(data.sidequests)) {
+    throw new Error('The game data must contain routes, places and sidequests.');
+  }
+  const places = data.places.map(p => {
+    const lat = Number(p.lat), lon = Number(p.lon);
+    if (!p.id || !p.name || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+      throw new Error('Location "' + (p.id || '?') + '" needs id, name, lat and lon.');
+    }
+    return {
+      ...p, lat, lon, short: p.short || p.name, category: p.category || '',
+      kind: p.kind || '', address: p.address || '', hint: p.hint || '',
+      photo: p.photo || '', photoCredit: p.photoCredit || '', wikipedia: p.wikipedia || '',
+      text: Array.isArray(p.text) ? p.text : [], trivia: Array.isArray(p.trivia) ? p.trivia : [],
+    };
+  });
+  const byId = new Map(places.map(p => [p.id, p]));
+  const routes = data.routes.map(route => {
+    if (!route.id || !route.name || !Array.isArray(route.locationIds) || !route.locationIds.length) {
+      throw new Error('Each route needs an id, name and at least one location.');
+    }
+    route.locationIds.forEach(id => { if (!byId.has(id)) throw new Error('Unknown location "' + id + '" in route "' + route.id + '".'); });
+    return route;
+  });
+  const sidequests = data.sidequests.map(s => {
+    if (!byId.has(s.id)) throw new Error('Unknown side quest location "' + s.id + '".');
+    return { ...s, place: byId.get(s.id) };
+  });
+  return { places, routes, sidequests, warnings: data.coordinate_note ? [data.coordinate_note] : [] };
 }

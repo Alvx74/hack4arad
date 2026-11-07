@@ -1,0 +1,1039 @@
+{
+  "coordinate_note": "Coordonatele pentru noile puncte sunt inițiale și trebuie verificate pe teren înainte de publicare. Coordonatele cu surse cunoscute au fost introduse acolo unde au putut fi confirmate; unele adrese/poziții sunt aproximative.",
+  "routes": [
+    {
+      "id": "traseu-1",
+      "name": "Traseul 1",
+      "description": "Repere istorice și culturale din centrul Aradului.",
+      "locationIds": [
+        "biserica-rosie",
+        "primaria-arad",
+        "filarmonica-arad",
+        "complex-muzeal",
+        "vechiul-cazinou",
+        "moise-nicoara",
+        "strand-neptun"
+      ]
+    },
+    {
+      "id": "traseu-2",
+      "name": "Traseul 2",
+      "description": "Piețe, cultură, teatru și patrimoniu urban.",
+      "locationIds": [
+        "piata-avram-iancu",
+        "muzeul-calculatoarelor",
+        "teatrul-ioan-slavici",
+        "biserica-anton",
+        "biblioteca-judeteana",
+        "teatrul-marionete",
+        "casa-pianului",
+        "piata-reconcilierii"
+      ]
+    },
+    {
+      "id": "traseu-3",
+      "name": "Traseul 3",
+      "description": "Un traseu prin reperele moderne și zonele importante ale orașului.",
+      "locationIds": [
+        "catedrala-sfanta-treime",
+        "lacul-padurice",
+        "gara-cfr",
+        "atrium-mall",
+        "afi-arad",
+        "stadion-uta"
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "biserica-rosie",
+      "name": "Biserica Roșie",
+      "short": "Biserica Roșie",
+      "category": "obiectiv",
+      "kind": "Biserică",
+      "address": "Bulevardul Revoluției, Arad",
+      "lat": 46.1774,
+      "lon": 21.32022,
+      "hint": "Apropie-te de Biserica Roșie pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Câte uși secundare are?",
+          "o": [
+            "2",
+            "3",
+            "4",
+            "5"
+          ],
+          "a": 2,
+          "e": ""
+        },
+        {
+          "q": "În ce limbă este scrisul de la intrare?",
+          "o": [
+            "Română",
+            "Maghiară",
+            "Germană",
+            "Latină"
+          ],
+          "a": 1,
+          "e": ""
+        },
+        {
+          "q": "Câte culori principale are biserica?",
+          "o": [
+            "2",
+            "3",
+            "4",
+            "5"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "primaria-arad",
+      "name": "Primăria Arad",
+      "short": "Primăria Arad",
+      "category": "obiectiv",
+      "kind": "Clădire publică",
+      "address": "Bulevardul Revoluției 75, Arad",
+      "lat": 46.17545,
+      "lon": 21.31913,
+      "hint": "Apropie-te de Primăria Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Cine este arhitectul?",
+          "o": [
+            "Ödön Lechner",
+            "Pekkar Francisc",
+            "József Diescher",
+            "Andor Halmay"
+          ],
+          "a": 1,
+          "e": ""
+        },
+        {
+          "q": "Câte globuri are fiecare stâlp de iluminare?",
+          "o": [
+            "3",
+            "4",
+            "5",
+            "6"
+          ],
+          "a": 2,
+          "e": ""
+        },
+        {
+          "q": "Primăria este predominant albă, dar mai are și o altă culoare. Care este aceasta?",
+          "o": [
+            "Albastru",
+            "Gri",
+            "Galben",
+            "Verde"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "filarmonica-arad",
+      "name": "Filarmonica Arad",
+      "short": "Filarmonica Arad",
+      "category": "obiectiv",
+      "kind": "Instituție culturală",
+      "address": "Piața George Enescu 1, Arad",
+      "lat": 46.1712,
+      "lon": 21.3208,
+      "hint": "Apropie-te de Filarmonica Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Care este anul inaugurării?",
+          "o": [
+            "1901–1903",
+            "1911–1913",
+            "1921–1923",
+            "1931–1933"
+          ],
+          "a": 1,
+          "e": ""
+        },
+        {
+          "q": "Câte statui are de la trepte până la intrare?",
+          "o": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "complex-muzeal",
+      "name": "Complexul Muzeal Arad",
+      "short": "Complexul Muzeal Arad",
+      "category": "obiectiv",
+      "kind": "Muzeu",
+      "address": "Piața George Enescu 1, Arad",
+      "lat": 46.1712,
+      "lon": 21.3208,
+      "hint": "Apropie-te de Complexul Muzeal Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Care este numărul de intrări pe care scrie „Muzeu”?",
+          "o": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "vechiul-cazinou",
+      "name": "Vechiul Cazinou",
+      "short": "Vechiul Cazinou",
+      "category": "obiectiv",
+      "kind": "Clădire istorică",
+      "address": "Arad",
+      "lat": 46.17196,
+      "lon": 21.32059,
+      "hint": "Apropie-te de Vechiul Cazinou pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Care este numărul de stâlpi de iluminare din fața cazinoului?",
+          "o": [
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "a": 2,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "moise-nicoara",
+      "name": "Colegiul Național Moise Nicoară",
+      "short": "Colegiul Național Moise Nicoară",
+      "category": "obiectiv",
+      "kind": "Instituție de învățământ",
+      "address": "Piața Moise Nicoară 1, Arad",
+      "lat": 46.171,
+      "lon": 21.31931,
+      "hint": "Apropie-te de Colegiul Național Moise Nicoară pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Care este anul inaugurării?",
+          "o": [
+            "1869–1873",
+            "1877–1881",
+            "1890–1894",
+            "1901–1905"
+          ],
+          "a": 0,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "strand-neptun",
+      "name": "Ștrandul Neptun",
+      "short": "Ștrandul Neptun",
+      "category": "obiectiv",
+      "kind": "Zonă de agrement",
+      "address": "Ștrandul Neptun, Arad",
+      "lat": 46.17392,
+      "lon": 21.32674,
+      "hint": "Apropie-te de Ștrandul Neptun pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Ștrandul Neptun — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-1",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "piata-avram-iancu",
+      "name": "Piața Avram Iancu",
+      "short": "Piața Avram Iancu",
+      "category": "obiectiv",
+      "kind": "Piață",
+      "address": "Piața Avram Iancu, Arad",
+      "lat": 46.169656,
+      "lon": 21.3168615,
+      "hint": "Apropie-te de Piața Avram Iancu pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Piața Avram Iancu — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "muzeul-calculatoarelor",
+      "name": "Muzeul de Istorie a Calculatoarelor Arad",
+      "short": "Muzeul de Istorie a Calculatoarelor Arad",
+      "category": "obiectiv",
+      "kind": "Muzeu",
+      "address": "Arad",
+      "lat": 46.17619,
+      "lon": 21.31607,
+      "hint": "Apropie-te de Muzeul de Istorie a Calculatoarelor Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Muzeul de Istorie a Calculatoarelor Arad — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "teatrul-ioan-slavici",
+      "name": "Teatrul Ioan Slavici",
+      "short": "Teatrul Ioan Slavici",
+      "category": "obiectiv",
+      "kind": "Teatru",
+      "address": "Bulevardul Revoluției 103, Arad",
+      "lat": 46.1719,
+      "lon": 21.3154,
+      "hint": "Apropie-te de Teatrul Ioan Slavici pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Câte felinare sunt în fața teatrului?",
+          "o": [
+            "5",
+            "6",
+            "7",
+            "8"
+          ],
+          "a": 2,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "biserica-anton",
+      "name": "Biserica Romano-Catolică Anton",
+      "short": "Biserica Romano-Catolică Anton",
+      "category": "obiectiv",
+      "kind": "Biserică",
+      "address": "Bulevardul Revoluției 96A, Arad",
+      "lat": 46.17237,
+      "lon": 21.31521,
+      "hint": "Apropie-te de Biserica Romano-Catolică Anton pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Care sunt culorile statuii de la intrare?",
+          "o": [
+            "Roz și Albastru",
+            "Alb și Auriu",
+            "Roșu și Verde",
+            "Negru și Alb"
+          ],
+          "a": 0,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "biblioteca-judeteana",
+      "name": "Biblioteca Județeană",
+      "short": "Biblioteca Județeană",
+      "category": "obiectiv",
+      "kind": "Bibliotecă",
+      "address": "Strada Gheorghe Popa de Teiuș 2–4, Arad",
+      "lat": 46.176941,
+      "lon": 21.315792,
+      "hint": "Apropie-te de Biblioteca Județeană pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Biblioteca Județeană — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "teatrul-marionete",
+      "name": "Teatrul de Marionete",
+      "short": "Teatrul de Marionete",
+      "category": "obiectiv",
+      "kind": "Teatru",
+      "address": "Strada Episcopiei 15, Arad",
+      "lat": 46.1751,
+      "lon": 21.314,
+      "hint": "Apropie-te de Teatrul de Marionete pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Teatrul de Marionete — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "casa-pianului",
+      "name": "Casa Pianului",
+      "short": "Casa Pianului",
+      "category": "obiectiv",
+      "kind": "Casă memorială",
+      "address": "Strada Episcopiei 25, Arad",
+      "lat": 46.1749,
+      "lon": 21.3139,
+      "hint": "Apropie-te de Casa Pianului pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Casa Pianului — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "piata-reconcilierii",
+      "name": "Piața Reconcilierii",
+      "short": "Piața Reconcilierii",
+      "category": "obiectiv",
+      "kind": "Piață",
+      "address": "Parcul Reconcilierii, Arad",
+      "lat": 46.17088,
+      "lon": 21.30873,
+      "hint": "Apropie-te de Piața Reconcilierii pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Câte lumini sunt în jurul statuii celor 13 generali?",
+          "o": [
+            "13",
+            "15",
+            "17",
+            "19"
+          ],
+          "a": 2,
+          "e": ""
+        },
+        {
+          "q": "Care parte din statuia Arcului de Triumf este aurită?",
+          "o": [
+            "Scutul",
+            "Degetele",
+            "Baza",
+            "Coroana"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "traseu-2",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "catedrala-sfanta-treime",
+      "name": "Catedrala Sfânta Treime",
+      "short": "Catedrala Sfânta Treime",
+      "category": "obiectiv",
+      "kind": "Catedrală",
+      "address": "Arad",
+      "lat": 46.1836,
+      "lon": 21.3247,
+      "hint": "Apropie-te de Catedrala Sfânta Treime pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Catedrala Sfânta Treime — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-3",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "lacul-padurice",
+      "name": "Lacul Pădurice",
+      "short": "Lacul Pădurice",
+      "category": "obiectiv",
+      "kind": "Lac",
+      "address": "Parcul Pădurice, Arad",
+      "lat": 46.183,
+      "lon": 21.3185,
+      "hint": "Apropie-te de Lacul Pădurice pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Lacul Pădurice — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-3",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "gara-cfr",
+      "name": "Gara CFR",
+      "short": "Gara CFR",
+      "category": "obiectiv",
+      "kind": "Gară",
+      "address": "Piața Gării 8–9, Arad",
+      "lat": 46.176,
+      "lon": 21.307,
+      "hint": "Apropie-te de Gara CFR pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Gara CFR — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-3",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "atrium-mall",
+      "name": "Atrium Mall",
+      "short": "Atrium Mall",
+      "category": "obiectiv",
+      "kind": "Centru comercial",
+      "address": "Calea Aurel Vlaicu 10–12, Arad",
+      "lat": 46.1864,
+      "lon": 21.312,
+      "hint": "Apropie-te de Atrium Mall pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Atrium Mall — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-3",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "afi-arad",
+      "name": "AFI Arad",
+      "short": "AFI Arad",
+      "category": "obiectiv",
+      "kind": "Centru comercial",
+      "address": "Calea Aurel Vlaicu 14, Arad",
+      "lat": 46.186,
+      "lon": 21.3115,
+      "hint": "Apropie-te de AFI Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre AFI Arad — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-3",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "stadion-uta",
+      "name": "Stadionul UTA",
+      "short": "Stadionul UTA",
+      "category": "obiectiv",
+      "kind": "Stadion",
+      "address": "Arad",
+      "lat": 46.1834,
+      "lon": 21.3083,
+      "hint": "Apropie-te de Stadionul UTA pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Întrebare provizorie despre Stadionul UTA — completează aici întrebarea finală.",
+          "o": [],
+          "a": -1,
+          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
+          "placeholder": true
+        }
+      ],
+      "routeId": "traseu-3",
+      "sidequestCategory": ""
+    },
+    {
+      "id": "climb-again",
+      "name": "Climb Again Arad",
+      "short": "Climb Again Arad",
+      "category": "Niche",
+      "kind": "Niche",
+      "address": "Strada Mucius Scaevola 55, Arad",
+      "lat": 46.1672,
+      "lon": 21.307,
+      "hint": "Apropie-te de Climb Again Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Cum îl chema pe fostul proprietar?",
+          "o": [
+            "Ionathan",
+            "Ionel",
+            "Ionuț",
+            "Ioan"
+          ],
+          "a": 0,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Niche"
+    },
+    {
+      "id": "parcul-zona-300",
+      "name": "Parcul Zona 300",
+      "short": "Parcul Zona 300",
+      "category": "Niche",
+      "kind": "Niche",
+      "address": "Bulevardul Nicolae Titulescu, Arad",
+      "lat": 46.1578,
+      "lon": 21.351,
+      "hint": "Apropie-te de Parcul Zona 300 pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Câte mese de șah sunt în parc?",
+          "o": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "a": 2,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Niche"
+    },
+    {
+      "id": "agora-mall",
+      "name": "Agora Mall",
+      "short": "Agora Mall",
+      "category": "Niche",
+      "kind": "Niche",
+      "address": "Calea Aurel Vlaicu 225–235, Arad",
+      "lat": 46.188,
+      "lon": 21.306,
+      "hint": "Apropie-te de Agora Mall pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Ce se desfășoară în subsolul mallului?",
+          "o": [
+            "Bowling",
+            "Karting",
+            "Patinoar",
+            "Cinema"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Niche"
+    },
+    {
+      "id": "stadion-gloria",
+      "name": "Stadionul Gloria",
+      "short": "Stadionul Gloria",
+      "category": "Niche",
+      "kind": "Niche",
+      "address": "Strada Dacilor 9, Arad",
+      "lat": 46.17,
+      "lon": 21.326,
+      "hint": "Apropie-te de Stadionul Gloria pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Ce sport se poate practica în interiorul traseului de alergat?",
+          "o": [
+            "Aruncarea suliței",
+            "Aruncarea ciocanului",
+            "Săritura în lungime",
+            "Aruncarea discului"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Niche"
+    },
+    {
+      "id": "bt-arad",
+      "name": "Banca Transilvania Arad",
+      "short": "Banca Transilvania Arad",
+      "category": "Affiliate",
+      "kind": "Affiliate",
+      "address": "Bulevardul Revoluției 43, Arad",
+      "lat": 46.1738,
+      "lon": 21.3185,
+      "hint": "Apropie-te de Banca Transilvania Arad pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Câte ATM-uri sunt la intrare?",
+          "o": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Affiliate"
+    },
+    {
+      "id": "uav-corp-m",
+      "name": "Facultatea Aurel Vlaicu, Corp M",
+      "short": "Facultatea Aurel Vlaicu, Corp M",
+      "category": "Affiliate",
+      "kind": "Affiliate",
+      "address": "Strada Elena Drăgoi 2, Arad",
+      "lat": 46.157,
+      "lon": 21.351,
+      "hint": "Apropie-te de Facultatea Aurel Vlaicu, Corp M pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Ce concurs s-a susținut aici și a dus la realizarea acestui proiect?",
+          "o": [
+            "HACK4ARAD",
+            "InfoEducație",
+            "Robochallenge",
+            "FIRST Tech Challenge"
+          ],
+          "a": 0,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Affiliate"
+    },
+    {
+      "id": "langoseria-felix",
+      "name": "Langoșeria Felix",
+      "short": "Langoșeria Felix",
+      "category": "Producători locali",
+      "kind": "Producători locali",
+      "address": "Arad — poziție de verificat",
+      "lat": 46.1708,
+      "lon": 21.313,
+      "hint": "Apropie-te de Langoșeria Felix pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Cum îl cheamă pe fiul lui Felix?",
+          "o": [
+            "Felix",
+            "Mihai",
+            "Andrei",
+            "Alex"
+          ],
+          "a": 0,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Producători locali"
+    },
+    {
+      "id": "pravalia-danei",
+      "name": "Prăvălia Danei",
+      "short": "Prăvălia Danei",
+      "category": "Producători locali",
+      "kind": "Producători locali",
+      "address": "Arad — lângă Langoșeria Felix (conform notițelor)",
+      "lat": 46.1708,
+      "lon": 21.313,
+      "hint": "Apropie-te de Prăvălia Danei pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Cu cine este vecină Prăvălia Danei?",
+          "o": [
+            "Langoșeria Felix",
+            "Ar Ski Shop",
+            "Banca Transilvania",
+            "Climb Again"
+          ],
+          "a": 0,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Producători locali"
+    },
+    {
+      "id": "piata-mihai-viteazu",
+      "name": "Piața Mihai Viteazu",
+      "short": "Piața Mihai Viteazu",
+      "category": "Producători locali",
+      "kind": "Producători locali",
+      "address": "Piața Mihai Viteazu, Arad",
+      "lat": 46.1708,
+      "lon": 21.313,
+      "hint": "Apropie-te de Piața Mihai Viteazu pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Care este produsul predominant vândut?",
+          "o": [
+            "Legumele",
+            "Fructele",
+            "Florile",
+            "Produsele lactate"
+          ],
+          "a": 2,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Producători locali"
+    },
+    {
+      "id": "ar-ski-shop",
+      "name": "Ar Ski Shop",
+      "short": "Ar Ski Shop",
+      "category": "Producători locali",
+      "kind": "Producători locali",
+      "address": "Arad — adresă de verificat",
+      "lat": 46.174,
+      "lon": 21.316,
+      "hint": "Apropie-te de Ar Ski Shop pentru a descoperi oprirea.",
+      "photo": "",
+      "photoCredit": "",
+      "wikipedia": "",
+      "text": [],
+      "trivia": [
+        {
+          "q": "Pentru ce sunt cunoscuți?",
+          "o": [
+            "Echipamente premium",
+            "Prețuri accesibile",
+            "Produse personalizate",
+            "Închirieri gratuite"
+          ],
+          "a": 1,
+          "e": ""
+        }
+      ],
+      "routeId": "",
+      "sidequestCategory": "Producători locali"
+    }
+  ],
+  "sidequests": [
+    {
+      "id": "climb-again",
+      "category": "Niche"
+    },
+    {
+      "id": "parcul-zona-300",
+      "category": "Niche"
+    },
+    {
+      "id": "agora-mall",
+      "category": "Niche"
+    },
+    {
+      "id": "stadion-gloria",
+      "category": "Niche"
+    },
+    {
+      "id": "bt-arad",
+      "category": "Affiliate"
+    },
+    {
+      "id": "uav-corp-m",
+      "category": "Affiliate"
+    },
+    {
+      "id": "langoseria-felix",
+      "category": "Producători locali"
+    },
+    {
+      "id": "pravalia-danei",
+      "category": "Producători locali"
+    },
+    {
+      "id": "piata-mihai-viteazu",
+      "category": "Producători locali"
+    },
+    {
+      "id": "ar-ski-shop",
+      "category": "Producători locali"
+    }
+  ]
+}
