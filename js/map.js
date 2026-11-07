@@ -1,17 +1,19 @@
 // Leaflet map wrapper. Leaflet itself is loaded as a global (window.L)
 // from vendor/leaflet by index.html.
-import { START, TILES, MAP_COLORS as C } from './config.js';
+import { START, TILES, MAP_COLORS, MAP_COLORS_DARK } from './config.js';
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export class TrailMap {
-  constructor(el, { onMapClick, onMarkerClick, onTileError }) {
+  constructor(el, { onMapClick, onMarkerClick, onTileError, dark = false }) {
+    const C = dark ? MAP_COLORS_DARK : MAP_COLORS;
+    this.dark = dark;
     const L = window.L;
     this.L = L;
     this.markers = {};
     this.map = L.map(el, { zoomControl: false }).setView(START, 15);
     let warned = false;
-    L.tileLayer(TILES.url, TILES.options).addTo(this.map).on('tileerror', () => {
+    this.tiles = L.tileLayer(this.tileUrl(dark), TILES.options).addTo(this.map).on('tileerror', () => {
       if (!warned) { warned = true; onTileError && onTileError(); }
     });
     // Solid line = walking on streets; dotted = getting to/from the nearest street,
@@ -24,6 +26,21 @@ export class TrailMap {
     this.onMarkerClick = onMarkerClick;
     this.map.on('click', e => onMapClick && onMapClick({ lat: e.latlng.lat, lon: e.latlng.lng }));
     if (window.ResizeObserver) new ResizeObserver(() => this.map.invalidateSize()).observe(el);
+  }
+
+  tileUrl(dark) { return dark ? TILES.url.replace('rastertiles/voyager', 'dark_all') : TILES.url; }
+
+  // Switches map tiles and line colours between light and dark mode.
+  setTheme(dark) {
+    if (dark === this.dark) return;
+    this.dark = dark;
+    const C = dark ? MAP_COLORS_DARK : MAP_COLORS;
+    this.tiles.setUrl(this.tileUrl(dark));
+    this.routeLine.setStyle({ color: C.route });
+    this.linkLine.setStyle({ color: C.route });
+    this.ring.setStyle({ color: C.ring, fillColor: C.ring });
+    this.acc.setStyle({ fillColor: C.accuracy });
+    this.dot.setStyle({ fillColor: C.user });
   }
 
   // stops: [{ id, lat, lon, kind:'shadow'|'on'|'off'|'current', no, label, title }]
@@ -69,10 +86,16 @@ export class TrailMap {
     this.linkLine.setLatLngs((dotted || []).filter(l => l.length > 1));
   }
 
-  fitPoints(points, maxZoom = 17) {
+  // pad = { top, right, bottom, left } in pixels, for parts of the map covered by UI.
+  fitPoints(points, maxZoom = 17, pad) {
     if (!points.length) return;
-    if (points.length === 1) this.map.setView(points[0], maxZoom);
-    else this.map.fitBounds(this.L.latLngBounds(points), { padding: [50, 50], maxZoom });
+    const p = Object.assign({ top: 50, right: 50, bottom: 50, left: 50 }, pad || {});
+    if (points.length === 1) {
+      this.map.setView(points[0], maxZoom);
+      if (pad) this.map.panBy([(p.right - p.left) / 2, (p.bottom - p.top) / 2], { animate: false });
+    } else {
+      this.map.fitBounds(this.L.latLngBounds(points), { paddingTopLeft: [p.left, p.top], paddingBottomRight: [p.right, p.bottom], maxZoom });
+    }
   }
 
   center(pos) { this.map.setView([pos.lat, pos.lon], Math.max(this.map.getZoom(), 17)); }

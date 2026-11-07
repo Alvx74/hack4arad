@@ -51,7 +51,8 @@ To add a question, add an object to that place's `trivia` array with `q`, `o` (a
 ## Trail rules
 
 - After sign-in, the player chooses one of the three routes. Directions point at the first unfinished stop on that selected route.
-- A main-route stop is discovered when you're within the interaction radius (300 m by default, see `js/config.js`). Side quests are checked independently against the same radius and can be discovered at any time.
+- A main-route stop is discovered when you're within the interaction radius (120 m by default, see `js/config.js`). Side quests only appear (on the map and in the list) while you are within that radius; they can be done in any order and don't move the main route on.
+- The chosen route is remembered per account on the device; "Schimbă traseul" in the account menu opens the route picker again.
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
 - Walking directions start from wherever you are: a dotted line leads to the nearest street, then the solid line follows streets. The route is planned once and followed; it is only re-planned when you stray from it (35–90 m depending on GPS accuracy).
 - Finished stops can be revisited from the list; "Înapoi la traseu" returns to the current stop.
@@ -59,6 +60,14 @@ To add a question, add an object to that place's `trivia` array with `q`, `o` (a
 ## Developer tools
 
 At the bottom of the app page there is a collapsed **ADVANCED** tab with testing tools: the interaction radius slider and a simulated position (tap the map or jump straight to a route stop or side quest). It is intentionally in English; everything else visitors see is Romanian.
+
+## Phone layout
+
+On phones (≤ 760 px wide, or portrait up to 1024 px) the map fills the screen under the header. Progress is a chip at the top, the next-stop card floats above a bottom bar (tap its handle for all directions), and the bottom bar opens pop-up panels: **Opriri**, **Misiuni** (with a badge when a side quest is nearby) and **Avansat** (the dev tools). The breakpoint is defined twice and must match: the phone section of `css/styles.css` and `MOBILE_MQ` in `js/app.js`.
+
+## Dark mode
+
+The moon/sun button in the header switches themes; the choice is saved in the browser (`arad-explorer:theme`). Without a choice, the app follows the device setting. Dark colours are the `:root[data-theme="dark"]` block in `css/styles.css`; the map uses CARTO's dark tiles and lighter route colours (`MAP_COLORS_DARK` in `js/config.js`).
 
 ## Design
 

@@ -26,6 +26,10 @@ export function createUserStore(userId) {
     setBest(placeId, score) { set('best:' + placeId, String(score)); },
     clearBests(ids) { ids.forEach(id => del('best:' + id)); },
 
+    // The route this account last picked on this device (null = ask).
+    getRoute() { return get('route'); },
+    setRoute(routeId) { set('route', routeId); },
+
     // True once this device has saved any progress for this account.
     hasLocalProgress() { return get('progress') !== null; },
 

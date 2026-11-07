@@ -13,6 +13,10 @@
 <!-- Map library (kept locally in vendor/ so the app does not depend on a CDN) -->
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="css/styles.css">
+<script>
+  // Apply the saved theme before the page paints (no light flash in dark mode).
+  try { var t = localStorage.getItem('arad-explorer:theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 </head>
 <body>
 
@@ -23,18 +27,24 @@
       <img src="assets/brand/stema-arad.png" alt="" width="34" height="39">
       <span>Arad <b>Explorer</b></span>
     </a>
-    <div class="hdr-right" id="hdrRight" hidden>
-    <button class="nav-link" id="minigameBtn" data-act="minigame">Minijoc</button>
-    <div class="account" id="account">
-      <button class="pill" id="accountBtn" data-act="menu" aria-haspopup="true" aria-expanded="false">
-        <span class="pill-dot" aria-hidden="true"></span><span id="userName"></span>
-      </button>
-      <div class="menu" id="accountMenu" role="menu" hidden>
-        <button role="menuitem" data-act="routes">Schimbă traseul</button>
-        <button role="menuitem" data-act="signout">Deconectează-te</button>
-        <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
+    <div class="hdr-tools">
+      <div class="hdr-right" id="hdrRight" hidden>
+        <button class="nav-link" id="minigameBtn" data-act="minigame">Minijoc</button>
+        <div class="account" id="account">
+          <button class="pill" id="accountBtn" data-act="menu" aria-haspopup="true" aria-expanded="false">
+            <span class="pill-dot" aria-hidden="true"></span><span id="userName"></span>
+          </button>
+          <div class="menu" id="accountMenu" role="menu" hidden>
+            <button role="menuitem" data-act="routes">Schimbă traseul</button>
+            <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
+            <button role="menuitem" data-act="signout">Deconectează-te</button>
+          </div>
+        </div>
       </div>
-    </div>
+      <button class="icon-btn" id="themeBtn" data-act="theme" aria-label="Activează modul întunecat" title="Mod întunecat">
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+      </button>
     </div>
   </div>
 </header>
@@ -114,11 +124,13 @@
 
 <!-- ============ ALEGEREA TRASEULUI ============ -->
 <section id="routeSelect" class="screen" hidden>
-  <div class="route-select-wrap">
-    <p class="kicker">Alege-ți aventura</p>
-    <h1>Ce traseu vrei să explorezi?</h1>
-    <p class="muted">Alege unul dintre cele trei trasee. Misiunile secundare sunt disponibile separat pe hartă, indiferent de traseul ales.</p>
-    <div class="route-choices" id="routeChoices"></div>
+  <div class="rs-wrap">
+    <div class="rs-head">
+      <h1>Alege un traseu</h1>
+      <p class="muted">Poți schimba traseul oricând din meniul contului. Misiunile secundare apar pe hartă când treci pe lângă ele.</p>
+    </div>
+    <ul class="rs-list" id="routeChoices"></ul>
+    <button class="btn" data-act="backtomap" id="rsBack" hidden>← Înapoi la hartă</button>
   </div>
 </section>
 
@@ -126,7 +138,7 @@
 <main id="app" class="screen" hidden>
   <div class="band">
     <div class="band-in">
-      <div>
+      <div class="band-copy">
         <p class="band-pre" id="progTitle"></p>
         <p class="band-text" id="progText"></p>
       </div>
@@ -134,7 +146,7 @@
     </div>
   </div>
 
-  <div class="wrap">
+  <div class="wrap app-wrap">
     <div class="mapbox">
       <div id="map" aria-label="Harta Aradului"></div>
       <div class="gps-chip" id="gpsChip">
@@ -152,14 +164,16 @@
     </div>
     <p class="gps-help" id="gpsHelp" hidden></p>
 
+    <!-- On phones this card floats over the bottom of the map; tap it to see all directions -->
     <section class="card next-card" id="routeCard" aria-live="polite">
+      <button class="nc-toggle" data-act="toggleroute" aria-label="Arată sau ascunde indicațiile"></button>
       <p class="kicker">Următoarea oprire</p>
       <div id="routeEmpty" class="muted"></div>
       <div id="routeBody" hidden>
         <h2 id="rTitle"></h2>
         <div class="big" id="rSummary"></div>
         <div class="next" id="rNext"></div>
-        <details class="steps-wrap">
+        <details class="steps-wrap" id="stepsWrap">
           <summary>Toate indicațiile</summary>
           <ol class="steps" id="rSteps"></ol>
           <p class="note" id="rNote"></p>
@@ -168,39 +182,66 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="list-title">Traseul tău</h2>
+    <!-- Panels: normal sections on desktop, pop-up sheets on phones -->
+    <section class="panel" id="panelStops" aria-labelledby="stopsTitle">
+      <div class="panel-head">
+        <h2 class="list-title" id="stopsTitle">Traseul tău</h2>
+        <button class="x panel-x" data-act="panel" data-panel="" aria-label="Închide">✕</button>
+      </div>
       <ul class="places" id="placeList"></ul>
     </section>
 
-    <section class="sidequests-section">
-      <h2 class="list-title">Misiuni secundare</h2>
-      <p class="muted sidequests-lead">Apropie-te de aceste locuri pentru a debloca misiunile. Nu schimbă progresul traseului principal.</p>
+    <section class="panel sidequests-section" id="panelQuests" aria-labelledby="questsTitle">
+      <div class="panel-head">
+        <h2 class="list-title" id="questsTitle">Misiuni secundare</h2>
+        <button class="x panel-x" data-act="panel" data-panel="" aria-label="Închide">✕</button>
+      </div>
+      <p class="muted sidequests-lead" id="sideQuestLead"></p>
       <ul class="places" id="sideQuestList"></ul>
     </section>
 
     <!-- Developer tools (English on purpose), collapsed at the bottom of the page -->
-    <details class="advanced" id="devTools">
-      <summary>ADVANCED</summary>
-      <div class="adv-body">
-        <div>
-          <label for="radius"><strong>Interaction radius</strong></label>
-          <div class="sliderrow">
-            <input type="range" id="radius" min="50" max="3000" step="50" value="300">
-            <span class="val" id="radiusVal">300 m</span>
-            <button class="btn sm" data-act="rreset">Reset</button>
-          </div>
-          <div class="note">Default 300 m. A stop is revealed and unlocked at or below this distance.</div>
-        </div>
-        <div>
-          <label class="row"><input type="checkbox" id="sim"> <strong>Simulate my position</strong></label>
-          <div class="note">When on, real GPS is ignored. Tap the map to place yourself, or jump to a stop:</div>
-          <div class="row" style="margin-top:8px" id="tpBtns"></div>
-          <div class="note" id="gpsSub"></div>
-        </div>
+    <section class="panel panel-adv" id="panelAdv">
+      <div class="panel-head m-only">
+        <h2 class="list-title">Advanced</h2>
+        <button class="x panel-x" data-act="panel" data-panel="" aria-label="Close">✕</button>
       </div>
-    </details>
+      <details class="advanced" id="devTools">
+        <summary>ADVANCED</summary>
+        <div class="adv-body">
+          <div>
+            <label for="radius"><strong>Interaction radius</strong></label>
+            <div class="sliderrow">
+              <input type="range" id="radius" min="20" max="3000" step="10" value="120">
+              <span class="val" id="radiusVal">120 m</span>
+              <button class="btn sm" data-act="rreset">Reset</button>
+            </div>
+            <div class="note">Default 120 m. Stops and side quests are revealed and unlocked at or below this distance.</div>
+          </div>
+          <div>
+            <label class="row"><input type="checkbox" id="sim"> <strong>Simulate my position</strong></label>
+            <div class="note">When on, real GPS is ignored. Tap the map to place yourself, or jump to a stop:</div>
+            <div class="row" style="margin-top:8px" id="tpBtns"></div>
+            <div class="note" id="gpsSub"></div>
+          </div>
+        </div>
+      </details>
+    </section>
   </div>
+
+  <!-- Phone dock (hidden on desktop) -->
+  <nav class="m-dock" aria-label="Meniu hartă">
+    <button data-act="panel" data-panel="stops" id="dockStops">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h9"/></svg><span>Opriri</span>
+    </button>
+    <button data-act="panel" data-panel="quests" id="dockQuests">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span>Misiuni</span><b class="badge" id="questBadge" hidden></b>
+    </button>
+    <button data-act="panel" data-panel="adv" id="dockAdv">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>Avansat</span>
+    </button>
+  </nav>
+  <div class="m-backdrop" data-act="panel" data-panel=""></div>
 </main>
 
 <!-- ============ MINIJOC (placeholder) ============ -->
