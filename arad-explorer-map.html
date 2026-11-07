@@ -191,6 +191,7 @@ footer{margin:18px 0 6px;font-size:.8rem;color:var(--muted)}
 <div id="toast" hidden role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
 <script>
 (function(){
 'use strict';
@@ -340,7 +341,7 @@ function initMap(){
     return;
   }
   map = L.map('map', {zoomControl:false}).setView(START, 15);
-  tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_543n_1_cd756e9b5676b81ffed0bc5c', {
     subdomains:'abcd', maxZoom:19,
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
   }).addTo(map);
