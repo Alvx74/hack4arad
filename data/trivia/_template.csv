@@ -1,0 +1,2 @@
+question,option_a,option_b,option_c,option_d,correct,explanation
+Your question goes here?,First answer,Second answer,Third answer,Fourth answer,B,Shown after the player answers. Leave option_c / option_d empty for fewer answers.

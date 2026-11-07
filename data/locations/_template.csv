@@ -1,0 +1,4 @@
+id,name,short_name,category,kind,address,lat,lon,hint,photo,photo_credit,wikipedia,description
+my-new-place,Full Name Shown After Discovery,Short Label,landmark,Landmark · Something,Street and number,46.17000,21.31000,One-sentence clue shown while the stop is still a shadow.,assets/photos/my-new-place.jpg,Photo: Your Name,en:Wikipedia_Article_Title,"First paragraph of the description.
+
+Second paragraph. Leave an empty line between paragraphs."

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arad Explorer</title>
+<link rel="icon" href="data:,">
+<!-- Map library (kept locally in vendor/ so the app does not depend on a CDN) -->
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ============ LOADING ============ -->
+<section id="loading" class="screen center-screen">
+  <p class="muted">Loading the trail…</p>
+</section>
+
+<!-- ============ ERROR ============ -->
+<section id="fatal" class="screen center-screen" hidden>
+  <div class="card narrow">
+    <h2>Couldn’t start Arad Explorer</h2>
+    <p id="fatalMsg"></p>
+  </div>
+</section>
+
+<!-- ============ FRONT PAGE ============ -->
+<section id="welcome" class="screen welcome" hidden>
+  <div class="welcome-in">
+    <p class="eyebrow">A walking trail through Arad</p>
+    <h1 class="hero">Arad Explorer</h1>
+    <p class="lede">Follow the map from stop to stop. Each place stays a shadow until you’re close, then opens up with its story and a few trivia questions.</p>
+
+    <ol class="how">
+      <li><span>1</span><div><strong>Walk to the shadow</strong>The map routes you to your next stop.</div></li>
+      <li><span>2</span><div><strong>Discover the place</strong>Get close and it reveals itself, with photos and history.</div></li>
+      <li><span>3</span><div><strong>Answer the trivia</strong>Finish it and you’re sent on to the next stop.</div></li>
+    </ol>
+
+    <form id="nameForm" class="card signin" novalidate>
+      <label for="username"><strong>Choose a username</strong></label>
+      <p class="note" style="margin-top:2px">Your progress is saved under this name on this device. <span id="stopCount"></span> stops on the trail.</p>
+      <div class="row signin-row">
+        <input id="username" name="username" type="text" autocomplete="username" maxlength="24" placeholder="e.g. alex" required>
+        <button class="btn primary" type="submit">Start exploring</button>
+      </div>
+      <div class="err" id="nameErr" role="alert"></div>
+      <div id="knownWrap" hidden>
+        <p class="note">Continue as</p>
+        <div class="row" id="knownUsers" style="gap:8px"></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<main id="app" class="screen" hidden>
+  <div class="wrap">
+    <header class="topbar">
+      <div>
+        <h1>Arad Explorer</h1>
+        <p class="sub">Follow the trail. Each stop stays a shadow until you get close.</p>
+      </div>
+      <div class="user">
+        <span class="avatar" aria-hidden="true">●</span>
+        <span id="userName"></span>
+        <button class="btn sm" data-act="signout">Switch user</button>
+      </div>
+    </header>
+
+    <div class="card" id="progressCard" style="margin-top:0">
+      <strong id="progTitle"></strong>
+      <div class="pdots" id="progDots"></div>
+      <div class="muted" id="progText"></div>
+    </div>
+
+    <div class="mapbox">
+      <div id="map" aria-label="Map of Arad"></div>
+      <div class="ctrls">
+        <button data-act="zin" aria-label="Zoom in">+</button>
+        <button data-act="zout" aria-label="Zoom out">−</button>
+        <button data-act="fit" aria-label="Show my next stop" title="Show my next stop">⤢</button>
+        <button data-act="locate" aria-label="Center on my position" title="Center on me">◎</button>
+      </div>
+      <div class="mapmsg" id="mapMsg" hidden></div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <span class="dot" id="gpsDot"></span>
+        <div style="flex:1;min-width:200px"><strong id="gpsTitle">Waiting for GPS…</strong><div class="muted" id="gpsSub"></div></div>
+        <button class="btn sm" data-act="enable">Enable / restart GPS</button>
+      </div>
+    </div>
+
+    <div class="card" id="routeCard">
+      <div class="row" style="justify-content:space-between">
+        <h3 style="margin:0">Directions</h3>
+        <label class="row" style="gap:6px"><input type="checkbox" id="showRoute" checked> Show route</label>
+      </div>
+      <div id="routeEmpty" class="muted" style="margin-top:8px"></div>
+      <div id="routeBody" hidden>
+        <div class="muted" id="rTitle" style="margin-top:8px"></div>
+        <div class="big" id="rSummary"></div>
+        <div class="next" id="rNext"></div>
+        <div class="note" id="rNote"></div>
+        <details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">All steps</summary><ol class="steps" id="rSteps"></ol></details>
+        <div style="margin-top:10px"><button class="btn sm" data-act="follow" id="followBtn" hidden>Back to the trail</button></div>
+      </div>
+    </div>
+
+    <details class="card tools">
+      <summary>Testing tools</summary>
+      <div class="body">
+        <div>
+          <label for="radius"><strong>Interaction radius</strong></label>
+          <div class="sliderrow">
+            <input type="range" id="radius" min="50" max="3000" step="50" value="500">
+            <span class="val" id="radiusVal">500 m</span>
+            <button class="btn sm" data-act="rreset">Reset</button>
+          </div>
+          <div class="note">Default 500 m. A stop is revealed and unlocked at or below this distance.</div>
+        </div>
+        <div>
+          <label class="row" style="gap:8px"><input type="checkbox" id="sim"> <strong>Simulate my position</strong></label>
+          <div class="note">When on, real GPS is ignored. Tap the map to place yourself, or jump to a stop:</div>
+          <div class="row" style="margin-top:8px" id="tpBtns"></div>
+        </div>
+        <label class="row" style="gap:6px"><input type="checkbox" id="allShadows"> Show upcoming stops as shadows</label>
+        <div><button class="btn sm" data-act="resetprog">Reset my progress</button></div>
+      </div>
+    </details>
+
+    <h3 style="margin:18px 0 8px">Your stops</h3>
+    <ul class="places" id="placeList"></ul>
+
+    <footer>Map data © OpenStreetMap contributors, tiles © CARTO. Walking directions from the public FOSSGIS/OSRM routing service. Placeholder photos from Wikipedia / Wikimedia Commons.</footer>
+  </div>
+</main>
+
+<div id="sheet" hidden><div class="sheet-in" id="sheetBody" role="dialog" aria-modal="true"></div></div>
+<div id="toast" hidden role="status"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
