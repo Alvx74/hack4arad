@@ -9,6 +9,7 @@ import { fetchRoute, stepText, currentStep } from './routing.js';
 import { findPhoto, searchPhotosUrl, fileToDataUrl } from './photos.js';
 import { TrailMap } from './map.js';
 import { mountMinigame, unmountMinigame } from './minigame.js';
+import { confetti } from './confetti.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -198,7 +199,7 @@ function renderRouteChoices() {
     const est = routeEstimate(route), n = route.locationIds.length;
     const done = route.locationIds.filter(id => isDone(id)).length;
     const cur = route.id === current;
-    const action = cur ? 'Continuă' : done ? 'Reia' : 'Începe';
+    const action = done === n ? 'Revezi' : cur ? 'Continuă' : done ? 'Reia' : 'Începe';
     return `<li><button class="rs-item ${cur ? 'cur' : ''}" data-act="chooseRoute" data-route="${esc(route.id)}">
       <span class="rs-num c${i % 3}">${i + 1}</span>
       <span class="rs-body">
@@ -430,8 +431,29 @@ function completeStop(id) {
   if (next) {
     toast('Oprirea ' + stopNo(id) + ' e gata. Drumul spre oprirea ' + stopNo(next) + ' e pe hartă.');
     S.fitOnRoute = true;
-  } else toast('Ai terminat traseul. Felicitări!');
+  } else celebrateRoute();
 }
+
+/* ===================== ROUTE COMPLETE ===================== */
+// Congratulations screen with confetti, then the choice of a new route.
+function celebrateRoute() {
+  const route = S.routes.find(r => r.id === S.selectedRouteId);
+  if (!route) return;
+  const ids = route.locationIds;
+  const max = ids.reduce((n, id) => n + place(id).trivia.filter(t => !t.placeholder).length, 0);
+  const got = ids.reduce((n, id) => n + (S.store.getBest(id) || 0), 0);
+  const others = S.routes.filter(r => r.id !== route.id && !r.locationIds.every(isDone));
+  closeSheet(); setPanel('');
+  $('#celTitle').textContent = 'Felicitări, ' + S.user.name + '!';
+  $('#celText').textContent = 'Ai terminat ' + route.name + '. '
+    + (others.length ? 'Mai ai ' + (others.length === 1 ? 'un traseu' : others.length + ' trasee') + ' de descoperit în Arad.' : 'Ai parcurs toate traseele din Arad!');
+  $('#celStops').textContent = ids.length;
+  $('#celScore').textContent = max ? got + '/' + max : '–';
+  $('#celebrate').hidden = false;
+  $('#celebrate [data-act="celnew"]').focus();
+  confetti();
+}
+const closeCelebration = () => { $('#celebrate').hidden = true; };
 
 /* ===================== ROUTING ===================== */
 const routeState = { targetId: null, from: null, t: 0, status: 'idle', data: null };
@@ -741,7 +763,7 @@ async function handlePhotoFile(file) {
 
 /* ===================== TRIVIA ===================== */
 function renderQuiz() {
-  const p = place(S.sheetId), box = $('#quiz'); if (!box) return;
+  const p = place(S.sheetId), box = $('#quiz'); if (!p || !box) return;
   const q = S.quizzes[p.id], n = p.trivia.length, best = S.store.getBest(p.id);
   if (!n) { box.innerHTML = '<h3>Întrebări</h3><p class="muted">Încă nu sunt întrebări pentru acest loc.</p>'; return; }
   // Stops whose questions aren't written yet: show the draft and let the player continue.
@@ -858,6 +880,8 @@ function bindEvents() {
       case 'menu': toggleMenu(); break;
       case 'routes': closeSheet(); renderRouteChoices(); showScreen('routeSelect'); break;
       case 'theme': toggleTheme(); break;
+      case 'celnew': closeCelebration(); renderRouteChoices(); showScreen('routeSelect'); break;
+      case 'celclose': closeCelebration(); break;
       case 'panel': setPanel(document.body.classList.contains('panel-' + el.dataset.panel) ? '' : el.dataset.panel); break;
       case 'toggleroute': $('#routeCard').classList.toggle('open'); break;
       case 'chooseRoute': startSelectedRoute(el.dataset.route); break;
@@ -906,7 +930,8 @@ function bindEvents() {
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (S.sheetId) closeSheet();
+    if (!$('#celebrate').hidden) closeCelebration();
+    else if (S.sheetId) closeSheet();
     else if (document.body.classList.contains('panel-open')) setPanel('');
     else closeMenu();
   });

@@ -50,6 +50,8 @@ To add a question, add an object to that place's `trivia` array with `q`, `o` (a
 
 ## Trail rules
 
+- Finishing the last stop of a route opens a congratulations screen (confetti, stops visited, correct answers) with "Începe un traseu nou", which opens the route picker.
+
 - After sign-in, the player chooses one of the three routes. Directions point at the first unfinished stop on that selected route.
 - A main-route stop is discovered when you're within the interaction radius (120 m by default, see `js/config.js`). Side quests are always on the map as unnamed gold stars; their name, story and questions (and their entry in the list) only appear while you are within that radius. They can be done in any order and don't move the main route on.
 - The chosen route is remembered per account on the device; "Schimbă traseul" in the account menu opens the route picker again.
@@ -80,7 +82,7 @@ Each place's `photo` field in `data/game-data.json` can be:
 - `commons:File name.jpg` – a free-licensed photo on Wikimedia Commons. The app asks Commons for a 960 px version and shows the author and licence under the photo (linked to the file page), which is what CC BY / CC BY-SA require.
 - a path like `assets/photos/place.jpg` or any image URL, with the credit in `photoCredit`.
 
-Leave it empty and the stop shows "Încă nu avem o fotografie" with a link to search for one. Don't hotlink photos from Google Images: they are copyrighted. Use Commons, your own photos, or ones you have permission for.
+The team's own photos live in `assets/photos/<place-id>.jpg` (max 1280 px, JPEG). Leave the field empty and the stop shows "Încă nu avem o fotografie" with a link to search for one. Don't hotlink photos from Google Images: they are copyrighted. Use Commons, your own photos, or ones you have permission for.
 
 ## Accounts (Supabase)
 

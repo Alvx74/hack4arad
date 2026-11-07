@@ -266,6 +266,24 @@
   </div>
 </footer>
 
+<!-- Shown once when the last stop of a route is finished -->
+<div id="celebrate" class="celebrate" hidden role="dialog" aria-modal="true" aria-labelledby="celTitle">
+  <div class="cel-card">
+    <img class="cel-crest" src="assets/brand/stema-arad.png" alt="" width="64" height="73">
+    <p class="kicker">Traseu complet</p>
+    <h2 id="celTitle">Felicitări!</h2>
+    <p class="cel-text" id="celText"></p>
+    <div class="cel-stats">
+      <div><b id="celStops"></b><span>opriri vizitate</span></div>
+      <div><b id="celScore"></b><span>răspunsuri corecte</span></div>
+    </div>
+    <div class="cel-actions">
+      <button class="btn primary lg block" data-act="celnew">Începe un traseu nou</button>
+      <button class="btn block" data-act="celclose">Rămân pe hartă</button>
+    </div>
+  </div>
+</div>
+
 <div id="sheet" hidden><div class="sheet-in" id="sheetBody" role="dialog" aria-modal="true"></div></div>
 <div id="toast" hidden role="status"></div>
 
