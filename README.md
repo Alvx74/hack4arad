@@ -40,7 +40,7 @@ The current game catalogue lives in `data/game-data.json`.
 
 - `routes` defines the three route choices shown after sign-in. Each route has an ordered `locationIds` list.
 - `places` contains the location details and trivia. Every route stop has at least one question entry.
-- Questions marked `placeholder: true` are intentionally unfinished. The game shows the placeholder and offers a temporary continue action so testing the route is not blocked.
+- Questions marked `placeholder: true` are intentionally unfinished. The stop shows the draft question and a "Continuă la oprirea următoare" button, which finishes the stop and routes to the next one like a completed quiz.
 - `sidequests` contains the independent side-quest location IDs and categories. Side quests appear separately and unlock when the player's GPS position enters the interaction radius. Completing one does not advance the main route.
 - Each place needs a unique `id`, a display name, and decimal-degree `lat` / `lon` coordinates.
 
@@ -51,7 +51,7 @@ To add a question, add an object to that place's `trivia` array with `q`, `o` (a
 ## Trail rules
 
 - After sign-in, the player chooses one of the three routes. Directions point at the first unfinished stop on that selected route.
-- A main-route stop is discovered when you're within the interaction radius (120 m by default, see `js/config.js`). Side quests only appear (on the map and in the list) while you are within that radius; they can be done in any order and don't move the main route on.
+- A main-route stop is discovered when you're within the interaction radius (120 m by default, see `js/config.js`). Side quests are always on the map as unnamed gold stars; their name, story and questions (and their entry in the list) only appear while you are within that radius. They can be done in any order and don't move the main route on.
 - The chosen route is remembered per account on the device; "Schimbă traseul" in the account menu opens the route picker again.
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
 - Walking directions start from wherever you are: a dotted line leads to the nearest street, then the solid line follows streets. The route is planned once and followed; it is only re-planned when you stray from it (35–90 m depending on GPS accuracy).
@@ -67,7 +67,7 @@ On phones (≤ 760 px wide, or portrait up to 1024 px) the map fills the screen 
 
 ## Dark mode
 
-The moon/sun button in the header switches themes; the choice is saved in the browser (`arad-explorer:theme`). Without a choice, the app follows the device setting. Dark colours are the `:root[data-theme="dark"]` block in `css/styles.css`; the map uses CARTO's dark tiles and lighter route colours (`MAP_COLORS_DARK` in `js/config.js`).
+The moon/sun button in the header switches themes; the choice is saved in the browser (`arad-explorer:theme`). Without a choice, the app follows the device setting. Dark mode uses a black background; its colours are the `:root[data-theme="dark"]` block in `css/styles.css`; the map uses CARTO's dark tiles and lighter route colours (`MAP_COLORS_DARK` in `js/config.js`).
 
 ## Design
 

@@ -53,7 +53,7 @@ export class TrailMap {
       const sig = s.kind + '|' + s.no + '|' + s.label;
       const html = s.kind === 'shadow'
         ? '<div class="pin shadow">?</div>'
-        : `<div class="pin ${s.kind}">${s.no}<span class="pin-label">${esc(s.label)}</span></div>`;
+        : `<div class="pin ${s.kind}">${s.no}${s.label ? `<span class="pin-label">${esc(s.label)}</span>` : ''}</div>`;
       const icon = L.divIcon({ className: 'pin-wrap', html, iconSize: [34, 34], iconAnchor: [17, 17] });
       const cur = this.markers[s.id];
       if (!cur) {

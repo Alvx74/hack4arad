@@ -39,12 +39,17 @@ function activeIndex() {
   return i < 0 ? S.path.length : i;
 }
 const activeId = () => S.path[activeIndex()] || null;
-// Side quests exist on the map and in the list only while the player is within the radius.
+// Who sees what:
+//   main stops  - on the map, in the list and openable up to the current stop
+//   side quests - always on the map as an unnamed star; listed, named and
+//                 playable only while the player is within the radius
 const isVisible = id => {
   if (isSideQuest(id)) return inRadius(place(id));
   const i = S.path.indexOf(id);
   return i >= 0 && (S.showAllShadows || i <= activeIndex());
 };
+const onMap = id => isSideQuest(id) || isVisible(id);
+const canOpen = onMap;
 const stopNo = id => S.path.indexOf(id) + 1;
 const displayName = p => isSideQuest(p.id) || isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
 const distTo = p => S.pos ? haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) : null;
@@ -292,7 +297,7 @@ function applyTheme() {
   document.documentElement.classList.toggle('is-dark', dark);
   $('#themeBtn').setAttribute('aria-label', dark ? 'Activează modul luminos' : 'Activează modul întunecat');
   $('#themeBtn').title = dark ? 'Mod luminos' : 'Mod întunecat';
-  document.querySelector('meta[name="theme-color"]').content = dark ? '#070a26' : '#0b0f3a';
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#000000' : '#0b0f3a';
   if (map) map.setTheme(dark);
 }
 function toggleTheme() {
@@ -324,9 +329,10 @@ function syncMap() {
     if (!isDisc(id)) return { id, lat: p.lat, lon: p.lon, kind: 'shadow', no: stopNo(id), label: '', title: 'Loc nedescoperit' };
     return { id, lat: p.lat, lon: p.lon, kind: inRadius(p) ? 'on' : 'off', no: stopNo(id), label: p.short, title: p.name };
   });
-  const sideStops = S.sidequestIds.filter(isVisible).map(id => {
+  // Side quests: always shown, never named on the map.
+  const sideStops = S.sidequestIds.filter(onMap).map(id => {
     const p = place(id);
-    return { id, lat: p.lat, lon: p.lon, kind: 'side', no: isDone(id) ? '✓' : '★', label: p.short, title: 'Misiune secundară: ' + p.name };
+    return { id, lat: p.lat, lon: p.lon, kind: inRadius(p) ? 'side' : 'side-far', no: isDone(id) ? '✓' : '★', label: '', title: 'Misiune secundară' };
   });
   map.setStops([...mainStops, ...sideStops]);
   map.setUser(S.pos, S.radius);
@@ -641,10 +647,15 @@ function renderSideQuestList() {
 }
 
 /* ===================== STOP SHEET ===================== */
-const modeFor = p => !isDisc(p.id) ? 'shadow' : inRadius(p) ? 'full' : 'locked';
+// shadow = not revealed yet, locked = revealed but too far, full = story + questions.
+// A side quest is revealed only while the player is inside its radius.
+function modeFor(p) {
+  if (isSideQuest(p.id)) return inRadius(p) ? 'full' : 'shadow';
+  return !isDisc(p.id) ? 'shadow' : inRadius(p) ? 'full' : 'locked';
+}
 
 function openSheet(id) {
-  if (!isVisible(id)) return;
+  if (!canOpen(id)) return;
   S.sheetId = id; renderSheet(); $('#sheet').hidden = false;
   const c = $('#sheetBody [data-act="close"]'); if (c) c.focus();
 }
@@ -659,8 +670,12 @@ function renderSheet() {
   const nav = `<div class="sheet-nav" id="sheetNav">${navControl(p.id, true)}</div>`;
   const close = '<button class="x" data-act="close" aria-label="Închide">✕</button>';
   let h;
-  if (mode === 'shadow') {
-    h = `<div class="sheet-head"><div><p class="kicker">${isSideQuest(p.id) ? 'Misiune secundară' : 'Nedescoperit'}</p><h2>${isSideQuest(p.id) ? esc(p.name) : 'Oprirea misterioasă ' + stopNo(p.id)}</h2></div>${close}</div>
+  if (mode === 'shadow' && isSideQuest(p.id)) {
+    h = `<div class="sheet-head"><div><p class="kicker">Misiune secundară</p><h2>Misiune ascunsă</h2></div>${close}</div>
+      <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Ascunsă</span></div>
+      <div class="lockmsg"><strong>Ce e aici?</strong><p>Apropie-te la ${S.radius} m de steaua de pe hartă ca să afli ce misiune te așteaptă. Misiunile secundare nu schimbă traseul principal.</p></div>`;
+  } else if (mode === 'shadow') {
+    h = `<div class="sheet-head"><div><p class="kicker">Nedescoperit</p><h2>Oprirea misterioasă ${stopNo(p.id)}</h2></div>${close}</div>
       <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Ascuns</span></div>
       <div class="lockmsg"><strong>Indiciu</strong><p>${esc(p.hint)}</p></div>
       <p class="muted">Apropie-te la ${S.radius} m de umbra de pe hartă ca să afli ce este.</p>${nav}`;
@@ -671,7 +686,7 @@ function renderSheet() {
       h += `<div class="lockmsg"><strong>Ești prea departe.</strong><p>Fotografiile, povestea și întrebările se deschid când ești la cel mult ${S.radius} m de acest loc.</p></div>${nav}`;
     } else {
       h += `<figure class="photo" id="photoBox"><div class="photo-loading">Se încarcă fotografia…</div></figure><div class="pcap" id="photoCap"></div>`
-        + p.text.map(t => `<p>${esc(t)}</p>`).join('')
+        + (p.text.length ? p.text.map(t => `<p>${esc(t)}</p>`).join('') : '<p class="muted">Descrierea acestui loc urmează să fie adăugată.</p>')
         + `<div class="quiz" id="quiz"></div>${nav}`;
     }
   }
@@ -687,7 +702,7 @@ function updateSheetDist() {
 
 function syncSheet() {
   if (!S.sheetId) return;
-  if (!isVisible(S.sheetId)) { closeSheet(); return; }
+  if (!canOpen(S.sheetId)) { closeSheet(); return; }
   const mode = modeFor(place(S.sheetId));
   if (S.sheetMode === 'full' && mode !== 'full') { closeSheet(); toast('Ai ieșit din zona de ' + S.radius + ' m, așa că locul s-a blocat din nou.'); }
   else if (mode !== S.sheetMode) renderSheet();
@@ -729,10 +744,12 @@ function renderQuiz() {
   const p = place(S.sheetId), box = $('#quiz'); if (!box) return;
   const q = S.quizzes[p.id], n = p.trivia.length, best = S.store.getBest(p.id);
   if (!n) { box.innerHTML = '<h3>Întrebări</h3><p class="muted">Încă nu sunt întrebări pentru acest loc.</p>'; return; }
+  // Stops whose questions aren't written yet: show the draft and let the player continue.
   if (p.trivia.every(t => t.placeholder)) {
-    const doneText = isDone(p.id) ? 'Această oprire provizorie este deja marcată ca parcursă.' : 'Întrebarea finală și variantele de răspuns urmează să fie adăugate.';
-    box.innerHTML = `<h3>Întrebare provizorie</h3><p class="qtext">${esc(p.trivia[0].q)}</p><p class="muted">${doneText}</p>`
-      + (isDone(p.id) ? '' : '<button class="btn primary" data-act="placeholderComplete">Continuă temporar</button>');
+    const done = isDone(p.id);
+    box.innerHTML = `<p class="kicker">Întrebare în lucru</p><p class="qtext">${esc(p.trivia[0].q)}</p>
+      <p class="muted">${done ? 'Ai trecut deja de această oprire.' : 'Întrebarea finală și variantele de răspuns urmează să fie adăugate. Până atunci poți merge mai departe.'}</p>`
+      + (done ? (q && q.unlocked ? afterCompletion(p) : '') : '<button class="btn primary" data-act="placeholderComplete">Continuă la oprirea următoare</button>');
     return;
   }
   const bestTxt = best !== undefined ? `<p class="muted">Cel mai bun scor aici: ${best}/${n}</p>` : '';
@@ -744,14 +761,7 @@ function renderQuiz() {
   }
   if (q.done) {
     const msg = q.score === n ? 'Scor perfect!' : q.score >= Math.ceil(n / 2) ? 'Bravo!' : 'Uită-te în jur și mai încearcă.';
-    const next = activeId();
-    let after = '';
-    if (q.unlocked && isSideQuest(p.id)) {
-      after = '<div class="next">Misiunea secundară este completă. Traseul principal nu a fost modificat.</div>';
-    } else if (q.unlocked && next) {
-      after = `<div class="next">Urmează oprirea ${stopNo(next)}: ${esc(displayName(place(next)))}. Drumul s-a actualizat pe hartă.</div>
-        <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
-    } else if (q.unlocked) after = '<div class="next">Ai terminat tot traseul. Felicitări!</div>';
+    const after = q.unlocked ? afterCompletion(p) : '';
     box.innerHTML = `<h3>Gata!</h3><p class="score">${q.score}/${n}</p><p>${msg}</p>${bestTxt}${after}<button class="btn" data-act="again">Joacă din nou</button>`;
     return;
   }
@@ -766,11 +776,23 @@ function renderQuiz() {
       <button class="btn primary" data-act="next">${q.i < n - 1 ? 'Următoarea întrebare' : 'Vezi rezultatul'}</button>` : '');
 }
 
+// Shown right after a stop is finished for the first time.
+function afterCompletion(p) {
+  if (isSideQuest(p.id)) return '<div class="next">Misiunea secundară este completă. Traseul principal nu a fost modificat.</div>';
+  const next = activeId();
+  if (!next) return '<div class="next">Ai terminat tot traseul. Felicitări!</div>';
+  return `<div class="next">Urmează oprirea ${stopNo(next)}: ${esc(displayName(place(next)))}. Drumul s-a actualizat pe hartă.</div>
+    <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
+}
+
 function quizAct(act, el) {
   const p = place(S.sheetId); if (!p || S.sheetMode !== 'full') return;
   const n = p.trivia.length;
   if (act === 'placeholderComplete') {
-    completeStop(p.id); updateAll(); renderQuiz(); return;
+    if (isDone(p.id)) return;
+    S.quizzes[p.id] = { unlocked: true };
+    completeStop(p.id);   // advances the trail like a finished quiz
+    updateAll(); renderQuiz(); return;
   }
   if (act === 'start' || act === 'again') { S.quizzes[p.id] = { i: 0, score: 0, chosen: null, done: false }; renderQuiz(); return; }
   const q = S.quizzes[p.id]; if (!q) return;
@@ -854,7 +876,7 @@ function bindEvents() {
       }
       case 'signout': closeMenu(); signOut(); break;
       case 'resetprog': closeMenu(); resetProgress(); break;
-      case 'open': if (isVisible(id)) { setPanel(''); openSheet(id); } break;
+      case 'open': if (canOpen(id)) { setPanel(''); openSheet(id); } break;
       case 'revisit': if (isDone(id)) { S.revisitId = id; S.fitOnRoute = true; listSig = ''; if (S.sheetId) renderSheet(); updateAll(); } break;
       case 'follow': S.revisitId = null; S.fitOnRoute = true; listSig = ''; if (S.sheetId) renderSheet(); updateAll(); break;
       case 'showroute':
@@ -862,7 +884,7 @@ function bindEvents() {
         if (!isMobile()) $('.mapbox').scrollIntoView({ behavior: 'smooth', block: 'start' });
         fitRoute(); break;
       case 'close': closeSheet(); break;
-      case 'start': case 'again': case 'opt': case 'next': quizAct(act, el); break;
+      case 'start': case 'again': case 'opt': case 'next': case 'placeholderComplete': quizAct(act, el); break;
       case 'rmphoto': { const p = place(S.sheetId); if (p) { S.store.removePhoto(p.id); renderPhoto(); } break; }
       case 'tp': { const p = place(id); if (p) { S.simPos = { lat: p.lat, lon: p.lon }; setSim(true); map && map.center(S.pos); } break; }
       case 'rreset': $('#radius').value = DEFAULT_RADIUS; S.radius = DEFAULT_RADIUS; $('#radiusVal').textContent = S.radius + ' m'; updateAll(); break;

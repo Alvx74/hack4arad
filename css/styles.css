@@ -40,27 +40,27 @@
 }
 
 /* ===================== DARK MODE =====================
-   Same coat-of-arms colours, tuned for a dark background.
+   Black background; coat-of-arms colours stay as accents.
    Follows the phone/computer setting unless the visitor picks a theme
    with the header button (saved as data-theme on <html>). */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --blue: #4351d6; --blue-soft: #1d2354; --blue-text: #a3acff;
-  --red: #e3262e; --red-hover: #f0454c; --red-soft: #3b171c; --red-text: #ff8a8f; --red-dark: #ff8a8f;
-  --gold: #f4c20d; --gold-soft: #352d10; --gold-text: #f4c20d; --gold-ink: #f6d977;
-  --green: #5cbf62; --green-soft: #15301a;
-  --ink: #070a26; --text: #e8eaf7; --muted: #a3a8c8; --line: #283062; --line-strong: #3a4377;
-  --bg: #0c1030; --surface: #151a3e; --overlay: rgba(0, 0, 0, .6); --map-bg: #191e40; --dot-idle: #6b7199;
+  --blue: #4351d6; --blue-soft: #1a1c2e; --blue-text: #a3acff;
+  --red: #e3262e; --red-hover: #f0454c; --red-soft: #33161a; --red-text: #ff8a8f; --red-dark: #ff8a8f;
+  --gold: #f4c20d; --gold-soft: #2e2810; --gold-text: #f4c20d; --gold-ink: #f6d977;
+  --green: #5cbf62; --green-soft: #142a17;
+  --ink: #000000; --text: #ededed; --muted: #a3a3a3; --line: #2a2a2a; --line-strong: #3d3d3d;
+  --bg: #0a0a0a; --surface: #161616; --overlay: rgba(0, 0, 0, .7); --map-bg: #121212; --dot-idle: #666666;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --blue: #4351d6; --blue-soft: #1d2354; --blue-text: #a3acff;
-    --red: #e3262e; --red-hover: #f0454c; --red-soft: #3b171c; --red-text: #ff8a8f; --red-dark: #ff8a8f;
-    --gold: #f4c20d; --gold-soft: #352d10; --gold-text: #f4c20d; --gold-ink: #f6d977;
-    --green: #5cbf62; --green-soft: #15301a;
-    --ink: #070a26; --text: #e8eaf7; --muted: #a3a8c8; --line: #283062; --line-strong: #3a4377;
-    --bg: #0c1030; --surface: #151a3e; --overlay: rgba(0, 0, 0, .6); --map-bg: #191e40; --dot-idle: #6b7199;
+    --blue: #4351d6; --blue-soft: #1a1c2e; --blue-text: #a3acff;
+    --red: #e3262e; --red-hover: #f0454c; --red-soft: #33161a; --red-text: #ff8a8f; --red-dark: #ff8a8f;
+    --gold: #f4c20d; --gold-soft: #2e2810; --gold-text: #f4c20d; --gold-ink: #f6d977;
+    --green: #5cbf62; --green-soft: #142a17;
+    --ink: #000000; --text: #ededed; --muted: #a3a3a3; --line: #2a2a2a; --line-strong: #3d3d3d;
+    --bg: #0a0a0a; --surface: #161616; --overlay: rgba(0, 0, 0, .7); --map-bg: #121212; --dot-idle: #666666;
   }
 }
 
@@ -351,6 +351,7 @@ input[type=range] { width: 100%; accent-color: var(--blue); }
 /* Side quests */
 .sidequests-lead { font-size: .9rem; margin: -4px 0 12px; }
 .num.side, .pin.side { background: var(--gold); color: #0b0f3a; }
+.pin.side-far { background: var(--surface); color: var(--gold-text); border-color: var(--gold); }
 .place.done .num.side { background: var(--green); color: #fff; }
 
 /* ===================== HEADER EXTRAS ===================== */
@@ -454,5 +455,14 @@ input[type=range] { width: 100%; accent-color: var(--blue); }
 
 /* Leaflet defaults follow the theme */
 .leaflet-container { background: var(--map-bg); font-family: var(--font); }
-.is-dark .leaflet-control-attribution { background: rgba(21, 26, 62, .8); color: var(--muted); }
+.is-dark .leaflet-control-attribution { background: rgba(22, 22, 22, .85); color: var(--muted); }
 .is-dark .leaflet-control-attribution a { color: var(--blue-text); }
+
+/* Black theme: lift floating elements off the black background */
+.is-dark #toast { background: #1f1f1f; border: 1px solid var(--line-strong); }
+.is-dark .band { border-bottom: 1px solid var(--line); }
+.is-dark .sheet-in, .is-dark .menu, .is-dark #routeCard { border-color: var(--line-strong); }
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1024px) {
+  .is-dark #app .band { border: 1px solid var(--line-strong); }
+  .is-dark #routeCard { border: 1px solid var(--line-strong); }
+}
