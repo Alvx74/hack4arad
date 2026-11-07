@@ -1076,7 +1076,7 @@ async function boot() {
   } catch (e) {
     console.error(e);
     $('#fatalMsg').textContent = location.protocol === 'file:'
-      ? 'Datele traseului nu pot fi citite când pagina e deschisă direct de pe disc. Pornește un server local în folderul proiectului (de exemplu: python3 -m http.server 8000) și deschide http://localhost:8000.'
+      ? 'Datele traseului nu pot fi citite când pagina e deschisă direct de pe disc. Pornește serverul local din folderul proiectului (python3 serve.py) și deschide https://localhost:8443.'
       : 'Datele traseului nu au putut fi încărcate. Reîncarcă pagina sau încearcă mai târziu.';
     showScreen('fatal');
     return;

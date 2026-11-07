@@ -4,14 +4,17 @@ A GPS walking trail through Arad. Each stop is a shadow on the map until you get
 
 ## Running it
 
-The app reads its CSV database with `fetch`, so it has to be served over HTTP (opening `index.html` straight from disk won't work):
+The app is served over **HTTPS**: phones only allow GPS on HTTPS pages, and Supabase sign-in links should return to an HTTPS address.
 
 ```bash
-python3 -m http.server 8000
-# then open http://localhost:8000
+python3 serve.py
+# on this computer:  https://localhost:8443
+# on your phone:     https://<your-computer's-IP>:8443   (same Wi-Fi; the address is printed)
 ```
 
-GitHub Pages works too. GPS needs HTTPS (or `localhost`) on phones.
+`serve.py` needs only Python 3 and the `openssl` command. The first run creates a local certificate in `.certs/` (not committed). Browsers warn once because it is self-signed: choose *Advanced → Proceed* (Chrome) or *Accept the risk* (Firefox). If your computer's IP changes, run `python3 serve.py --new-cert`.
+
+Opening `index.html` straight from disk won't work, because the browser blocks reading the data files. When published (GitHub Pages, Netlify, Vercel…) the site gets HTTPS automatically. All external services the app talks to (Supabase, map tiles, routing, Wikipedia/Commons) are already HTTPS.
 
 ## Project layout
 
@@ -119,4 +122,4 @@ What the front page does:
 
 Scores: when a trivia round ends with a new best score, it is sent with `save_place_score(p_place_id, p_score)`, where `p_place_id` is the location id from the CSV (e.g. `college`, text). On a device with no saved progress for that account, places with a score in `place_scores` count as finished, so the player continues where they left off. Trail progress itself (discovered / finished on this device) and own photos stay in the browser.
 
-Supabase settings to check (Dashboard → Authentication → URL Configuration): set **Site URL** to where the app is hosted, and add the same address (and `http://localhost:8000/` for testing) to **Redirect URLs**, otherwise confirmation and reset links won't return to the app.
+Supabase settings to check (Dashboard → Authentication → URL Configuration): set **Site URL** to where the app is hosted, and add the same address (and `https://localhost:8443/` for testing) to **Redirect URLs**, otherwise confirmation and reset links won't return to the app.
