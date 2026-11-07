@@ -12,7 +12,19 @@ python3 serve.py
 # on your phone:     https://<your-computer's-IP>:8443   (same Wi-Fi; the address is printed)
 ```
 
-`serve.py` needs only Python 3 and the `openssl` command. The first run creates a local certificate in `.certs/` (not committed). Browsers warn once because it is self-signed: choose *Advanced → Proceed* (Chrome) or *Accept the risk* (Firefox). If your computer's IP changes, run `python3 serve.py --new-cert`.
+Typing just `localhost:8443` also works: plain HTTP on that port is redirected to HTTPS.
+
+`serve.py` needs only Python 3 (3.8 or newer) and the `openssl` command. The first run creates a local certificate in `.certs/` (not committed). Browsers warn once because it is self-signed: choose *Advanced → Proceed* (Chrome) or *Accept the risk* (Firefox). If your computer's IP changes, run `python3 serve.py --new-cert`.
+
+If something goes wrong:
+
+| What you see | What to do |
+|---|---|
+| Browser: "Your connection is not private" / `NET::ERR_CERT_AUTHORITY_INVALID` | Normal for a local certificate: *Advanced → Proceed to localhost*. Firefox: *Advanced → Accept the risk*. |
+| Terminal: "The browser has not accepted the local certificate yet" | Same as above, it disappears once you proceed. |
+| Terminal: "port 8443 is already in use" | Another `serve.py` is running: close it (Ctrl+C in its terminal) or run `python3 serve.py --port 9443`. |
+| Terminal: "openssl was not found" | `sudo apt install openssl` |
+| Phone can't connect | Same Wi-Fi as the computer; use the "on your phone" address the terminal prints; if your IP changed: `python3 serve.py --new-cert`. Some firewalls need port 8443 allowed (`sudo ufw allow 8443/tcp`). |
 
 Opening `index.html` straight from disk won't work, because the browser blocks reading the data files. When published (GitHub Pages, Netlify, Vercel…) the site gets HTTPS automatically. All external services the app talks to (Supabase, map tiles, routing, Wikipedia/Commons) are already HTTPS.
 
