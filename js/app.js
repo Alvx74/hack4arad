@@ -105,7 +105,7 @@ function setBusy(on, label) {
 }
 
 function renderWelcome() {
-  $('#stopCount').textContent = S.path.length;
+  $('#stopCount').textContent = S.routes.length ? Math.max(...S.routes.map(r => r.locationIds.length)) : '–';
   setAuthMode(authMode === 'recovery' ? 'recovery' : 'login');
 }
 
@@ -664,7 +664,9 @@ function renderQuiz() {
     const msg = q.score === n ? 'Scor perfect!' : q.score >= Math.ceil(n / 2) ? 'Bravo!' : 'Uită-te în jur și mai încearcă.';
     const next = activeId();
     let after = '';
-    if (q.unlocked && next) {
+    if (q.unlocked && isSideQuest(p.id)) {
+      after = '<div class="next">Misiunea secundară este completă. Traseul principal nu a fost modificat.</div>';
+    } else if (q.unlocked && next) {
       after = `<div class="next">Urmează oprirea ${stopNo(next)}: ${esc(displayName(place(next)))}. Drumul s-a actualizat pe hartă.</div>
         <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
     } else if (q.unlocked) after = '<div class="next">Ai terminat tot traseul. Felicitări!</div>';
