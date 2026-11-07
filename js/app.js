@@ -16,6 +16,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 /* ===================== STATE ===================== */
 const S = {
   places: [], path: [], byId: new Map(),
+  routes: [], sidequests: [], sidequestIds: [], selectedRouteId: null,
   user: null, store: null,
   prog: { discovered: [], completed: [] },
   radius: DEFAULT_RADIUS,
@@ -31,15 +32,20 @@ let map = null;
 const place = id => S.byId.get(id);
 const isDisc = id => S.prog.discovered.includes(id);
 const isDone = id => S.prog.completed.includes(id);
+const isSideQuest = id => S.sidequestIds.includes(id);
 // The first stop on the path whose trivia isn't finished yet.
 function activeIndex() {
   const i = S.path.findIndex(id => !(isDisc(id) && isDone(id)));
   return i < 0 ? S.path.length : i;
 }
 const activeId = () => S.path[activeIndex()] || null;
-const isVisible = id => { const i = S.path.indexOf(id); return i >= 0 && (S.showAllShadows || i <= activeIndex()); };
+const isVisible = id => {
+  if (isSideQuest(id)) return true;
+  const i = S.path.indexOf(id);
+  return i >= 0 && (S.showAllShadows || i <= activeIndex());
+};
 const stopNo = id => S.path.indexOf(id) + 1;
-const displayName = p => isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
+const displayName = p => isSideQuest(p.id) || isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
 const distTo = p => S.pos ? haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) : null;
 const inRadius = p => { const d = distTo(p); return d !== null && d <= S.radius; };
 // Directions always point at the current stop, unless the user picked a finished stop to revisit.
@@ -51,7 +57,7 @@ let screen = 'loading';
 function showScreen(name) {
   if (screen === 'minigame' && name !== 'minigame') unmountMinigame();
   screen = name;
-  ['loading', 'welcome', 'app', 'minigame', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
+  ['loading', 'welcome', 'routeSelect', 'app', 'minigame', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
   $('#hdrRight').hidden = name !== 'app' && name !== 'minigame';
   $('#minigameBtn').classList.toggle('active', name === 'minigame');
   closeMenu();
@@ -165,6 +171,16 @@ function toggleMenu(force) {
 }
 const closeMenu = () => toggleMenu(false);
 
+function renderRouteChoices() {
+  $('#routeChoices').innerHTML = S.routes.map(route => `
+    <article class="route-choice">
+      <p class="kicker">${route.locationIds.length} opriri</p>
+      <h2>${esc(route.name)}</h2>
+      <p>${esc(route.description || 'Descoperă locuri importante din Arad.')}</p>
+      <button class="btn primary" data-act="chooseRoute" data-route="${esc(route.id)}">Alege acest traseu</button>
+    </article>`).join('');
+}
+
 function enterApp(user) {
   S.user = user;
   S.store = createUserStore(user.id);
@@ -172,14 +188,26 @@ function enterApp(user) {
   S.prog.discovered = S.prog.discovered.filter(id => S.byId.has(id));
   S.prog.completed = S.prog.completed.filter(id => S.byId.has(id));
   S.quizzes = {}; S.revisitId = null; S.sheetId = null;
-  clearRoute(); listSig = '';
   $('#userName').textContent = user.name;
+  renderRouteChoices();
+  showScreen('routeSelect');
+}
+
+function startSelectedRoute(routeId) {
+  const route = S.routes.find(r => r.id === routeId);
+  if (!route || !S.user) return;
+  S.selectedRouteId = route.id;
+  S.path = [...route.locationIds];
+  S.sidequestIds = S.sidequests.map(q => q.id);
+  S.revisitId = null; S.sheetId = null; S.quizzes = {};
+  clearRoute(); listSig = '';
   showScreen('app');
   if (!map) initMap(); else { map.clearStops(); map.refresh(); }
+  buildTeleportButtons();
   updateAll();
   fitTrail();
   startGPS();
-  syncFromAccount(user);
+  syncFromAccount(S.user);
 }
 
 // Brings the account's saved scores onto this device. On a device that has
@@ -220,11 +248,17 @@ function initMap() {
 
 function syncMap() {
   if (!map) return;
-  map.setStops(S.path.filter(isVisible).map(id => {
+  const mainStops = S.path.filter(isVisible).map(id => {
     const p = place(id);
     if (!isDisc(id)) return { id, lat: p.lat, lon: p.lon, kind: 'shadow', no: stopNo(id), label: '', title: 'Loc nedescoperit' };
     return { id, lat: p.lat, lon: p.lon, kind: inRadius(p) ? 'on' : 'off', no: stopNo(id), label: p.short, title: p.name };
-  }));
+  });
+  const sideStops = S.sidequestIds.map(id => {
+    const p = place(id);
+    if (!isDisc(id)) return { id, lat: p.lat, lon: p.lon, kind: 'shadow', no: '★', label: '', title: 'Misiune secundară nedescoperită' };
+    return { id, lat: p.lat, lon: p.lon, kind: inRadius(p) ? 'side' : 'side-off', no: '★', label: p.short, title: 'Misiune secundară: ' + p.name };
+  });
+  map.setStops([...mainStops, ...sideStops]);
   map.setUser(S.pos, S.radius);
 }
 
@@ -285,14 +319,27 @@ function checkDiscovery() {
   if (!inRadius(p)) return;
   S.prog.discovered.push(id); saveProg();
   toast('Ai descoperit: ' + p.name + '!');
-  // A stop without trivia has nothing to answer, so it counts as done right away.
   if (!p.trivia.length) completeStop(id);
+}
+
+function checkSideQuestDiscovery() {
+  S.sidequestIds.forEach(id => {
+    if (isDisc(id)) return;
+    const p = place(id);
+    if (!inRadius(p)) return;
+    S.prog.discovered.push(id); saveProg();
+    toast('Ai găsit o misiune secundară: ' + p.name + '!');
+  });
 }
 
 // Called once per stop, when its trivia has been answered for the first time.
 function completeStop(id) {
   if (isDone(id)) return;
   S.prog.completed.push(id); saveProg();
+  if (isSideQuest(id)) {
+    toast('Misiune secundară completată: ' + place(id).name + '!');
+    return;
+  }
   S.revisitId = null;
   clearRoute();
   const next = activeId();
@@ -489,7 +536,26 @@ function renderList() {
 }
 
 function buildTeleportButtons() {
-  $('#tpBtns').innerHTML = S.path.map(id => `<button class="btn sm" data-act="tp" data-id="${id}">At ${esc(place(id).short)}</button>`).join('');
+  const ids = [...S.path, ...S.sidequestIds];
+  $('#tpBtns').innerHTML = ids.map(id => `<button class="btn sm" data-act="tp" data-id="${id}">At ${esc(place(id).short)}</button>`).join('');
+}
+
+function renderSideQuestList() {
+  const root = $('#sideQuestList');
+  if (!root) return;
+  root.innerHTML = S.sidequestIds.map(id => {
+    const p = place(id), disc = isDisc(id), done = isDone(id), d = distTo(p);
+    const status = d === null ? 'Misiune secundară'
+      : done ? 'Completată'
+      : disc ? (inRadius(p) ? 'Disponibilă aici' : 'Deblocată · la ' + fmtDist(d))
+      : 'Apropie-te · la ' + fmtDist(d);
+    const tag = done ? '<span class="tag done">Completată</span>' : disc ? '<span class="tag cur">Deblocată</span>' : '<span class="tag">De descoperit</span>';
+    return `<li class="place ${disc ? '' : 'shadow'} ${done ? 'done' : ''}">
+      <div class="num">${done ? '✓' : '★'}</div>
+      <div class="pinfo"><strong>${esc(p.name)}</strong>${tag}<div class="sub2">${esc(p.category)}</div><div class="status">${esc(status)}</div></div>
+      <div class="pbtns"><button class="btn ${disc && inRadius(p) ? 'primary' : ''}" data-act="open" data-id="${id}">${disc ? 'Deschide' : 'Indiciu'}</button></div>
+    </li>`;
+  }).join('');
 }
 
 /* ===================== STOP SHEET ===================== */
@@ -512,7 +578,7 @@ function renderSheet() {
   const close = '<button class="x" data-act="close" aria-label="Închide">✕</button>';
   let h;
   if (mode === 'shadow') {
-    h = `<div class="sheet-head"><div><p class="kicker">Nedescoperit</p><h2>Oprirea misterioasă ${stopNo(p.id)}</h2></div>${close}</div>
+    h = `<div class="sheet-head"><div><p class="kicker">${isSideQuest(p.id) ? 'Misiune secundară' : 'Nedescoperit'}</p><h2>${isSideQuest(p.id) ? esc(p.name) : 'Oprirea misterioasă ' + stopNo(p.id)}</h2></div>${close}</div>
       <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Ascuns</span></div>
       <div class="lockmsg"><strong>Indiciu</strong><p>${esc(p.hint)}</p></div>
       <p class="muted">Apropie-te la ${S.radius} m de umbra de pe hartă ca să afli ce este.</p>${nav}`;
@@ -581,6 +647,12 @@ function renderQuiz() {
   const p = place(S.sheetId), box = $('#quiz'); if (!box) return;
   const q = S.quizzes[p.id], n = p.trivia.length, best = S.store.getBest(p.id);
   if (!n) { box.innerHTML = '<h3>Întrebări</h3><p class="muted">Încă nu sunt întrebări pentru acest loc.</p>'; return; }
+  if (p.trivia.every(t => t.placeholder)) {
+    const doneText = isDone(p.id) ? 'Această oprire provizorie este deja marcată ca parcursă.' : 'Întrebarea finală și variantele de răspuns urmează să fie adăugate.';
+    box.innerHTML = `<h3>Întrebare provizorie</h3><p class="qtext">${esc(p.trivia[0].q)}</p><p class="muted">${doneText}</p>`
+      + (isDone(p.id) ? '' : '<button class="btn primary" data-act="placeholderComplete">Continuă temporar</button>');
+    return;
+  }
   const bestTxt = best !== undefined ? `<p class="muted">Cel mai bun scor aici: ${best}/${n}</p>` : '';
   if (!q) {
     const lead = isDone(p.id) ? 'Ai terminat deja această oprire. Poți juca din nou pentru un scor mai bun.'
@@ -613,6 +685,9 @@ function renderQuiz() {
 function quizAct(act, el) {
   const p = place(S.sheetId); if (!p || S.sheetMode !== 'full') return;
   const n = p.trivia.length;
+  if (act === 'placeholderComplete') {
+    completeStop(p.id); updateAll(); renderQuiz(); return;
+  }
   if (act === 'start' || act === 'again') { S.quizzes[p.id] = { i: 0, score: 0, chosen: null, done: false }; renderQuiz(); return; }
   const q = S.quizzes[p.id]; if (!q) return;
   if (act === 'opt' && q.chosen === null) {
@@ -647,14 +722,15 @@ function toast(msg) {
 function updateAll() {
   if (!S.user) return;
   checkDiscovery();
-  renderProgress(); renderStatus(); renderList(); syncMap(); renderRoute(); syncSheet();
+  checkSideQuestDiscovery();
+  renderProgress(); renderStatus(); renderList(); renderSideQuestList(); syncMap(); renderRoute(); syncSheet();
   maybeReroute();
 }
 
 function resetProgress() {
   if (!window.confirm('Sigur vrei să iei traseul de la capăt? Progresul și scorurile pentru „' + S.user.name + '” vor fi șterse.')) return;
   S.prog = { discovered: [], completed: [] }; saveProg();
-  S.store.clearBests(S.path);
+  S.store.clearBests([...S.path, ...S.sidequestIds]);
   S.quizzes = {}; S.revisitId = null;
   closeSheet(); clearRoute(); listSig = '';
   if (map) map.clearStops();
@@ -674,6 +750,8 @@ function bindEvents() {
     const act = el.dataset.act, id = el.dataset.id;
     switch (act) {
       case 'menu': toggleMenu(); break;
+      case 'routes': closeSheet(); renderRouteChoices(); showScreen('routeSelect'); break;
+      case 'chooseRoute': startSelectedRoute(el.dataset.route); break;
       case 'minigame':
         if (screen === 'minigame') { showScreen('app'); map && map.refresh(); break; }
         closeSheet(); showScreen('minigame');
@@ -726,7 +804,10 @@ async function boot() {
   showScreen('loading');
   try {
     const trail = await loadTrail();
-    S.places = trail.places; S.path = trail.path;
+    S.places = trail.places;
+    S.routes = trail.routes;
+    S.sidequests = trail.sidequests;
+    S.sidequestIds = trail.sidequests.map(q => q.id);
     S.byId = new Map(trail.places.map(p => [p.id, p]));
   } catch (e) {
     console.error(e);
@@ -736,7 +817,6 @@ async function boot() {
     showScreen('fatal');
     return;
   }
-  buildTeleportButtons();
   // A password-reset link opens the page in recovery mode.
   const toRecovery = () => { authMode = 'recovery'; S.user = null; stopGPS(); renderWelcome(); showScreen('welcome'); };
   auth.onPasswordRecovery(toRecovery);
