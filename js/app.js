@@ -2,7 +2,7 @@
 // All visitor-facing text is Romanian; the dev panel (?dev=1) stays in English.
 import { DEFAULT_RADIUS, ARRIVED_METERS } from './config.js';
 import { loadTrail } from './data.js';
-import { auth, validateUsername } from './auth.js';
+import { auth, validateDisplayName, validateEmail, validatePassword, MIN_PASSWORD } from './auth.js';
 import { createUserStore } from './store.js';
 import { haversine, fmtDist, fmtDur, nearestOnLine, lineLength } from './geo.js';
 import { fetchRoute, stepText, currentStep } from './routing.js';
@@ -58,18 +58,96 @@ function showScreen(name) {
   window.scrollTo(0, 0);
 }
 
-function renderWelcome() {
-  const known = auth.knownUsers();
-  $('#knownWrap').hidden = !known.length;
-  $('#knownUsers').innerHTML = known.map(u =>
-    `<button type="button" data-act="pickuser" data-name="${esc(u.name)}">${esc(u.name)}</button>`).join('');
-  $('#stopCount').textContent = S.path.length;
-  $('#nameErr').textContent = '';
+/* ---------- account form (front page) ---------- */
+// Modes: login | signup | forgot (send reset email) | recovery (set new password)
+let authMode = 'login', authBusy = false;
+const RECOVERY_IN_URL = /type=recovery/.test(location.hash);
+
+function setAuthMode(mode, { keepMsg = false } = {}) {
+  authMode = mode;
+  const tabs = mode === 'login' || mode === 'signup';
+  $('#authTabs').hidden = !tabs;
+  $('#tabLogin').classList.toggle('on', mode === 'login');
+  $('#tabSignup').classList.toggle('on', mode === 'signup');
+  $('#tabLogin').setAttribute('aria-selected', String(mode === 'login'));
+  $('#tabSignup').setAttribute('aria-selected', String(mode === 'signup'));
+  const title = { forgot: 'Ai uitat parola?', recovery: 'Alege o parolă nouă' }[mode] || '';
+  const lead = {
+    forgot: 'Scrie emailul contului și îți trimitem un link pentru a seta o parolă nouă.',
+    recovery: `Parola trebuie să aibă cel puțin ${MIN_PASSWORD} caractere.`,
+  }[mode] || '';
+  $('#authTitle').hidden = !title; $('#authTitle').textContent = title;
+  $('#authLead').hidden = !lead; $('#authLead').textContent = lead;
+  $('#fName').hidden = mode !== 'signup';
+  $('#fEmail').hidden = mode === 'recovery';
+  $('#fPass').hidden = mode === 'forgot';
+  $('#passLabel').textContent = mode === 'recovery' ? 'Parola nouă' : 'Parolă';
+  $('#authPass').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+  $('#authSubmit').textContent = { login: 'Intră în cont', signup: 'Creează contul', forgot: 'Trimite linkul', recovery: 'Salvează parola' }[mode];
+  $('#forgotLink').hidden = mode !== 'login';
+  $('#backLink').hidden = mode !== 'forgot';
+  if (!keepMsg) { authMsg(''); authOk(''); }
+}
+const authMsg = t => { $('#authErr').textContent = t; };
+const authOk = t => { $('#authOk').hidden = !t; $('#authOk').textContent = t; };
+function setBusy(on, label) {
+  authBusy = on;
+  const b = $('#authSubmit');
+  b.classList.toggle('busy', on);
+  if (on) { b.dataset.label = b.textContent; b.textContent = label; }
+  else if (b.dataset.label) b.textContent = b.dataset.label;
 }
 
-async function signIn(name) {
-  try { enterApp(await auth.signIn(name)); }
-  catch (e) { $('#nameErr').textContent = e.message; $('#username').focus(); }
+function renderWelcome() {
+  $('#stopCount').textContent = S.path.length;
+  setAuthMode(authMode === 'recovery' ? 'recovery' : 'login');
+}
+
+async function submitAuth() {
+  if (authBusy) return;
+  authMsg(''); authOk('');
+  const name = $('#authName').value, email = $('#authEmail').value, pass = $('#authPass').value;
+  const fail = (msg, field) => { authMsg(msg); if (field) $(field).focus(); };
+  try {
+    if (authMode === 'login') {
+      const e = validateEmail(email); if (e.error) return fail(e.error, '#authEmail');
+      if (!pass) return fail('Scrie parola.', '#authPass');
+      setBusy(true, 'Se verifică…');
+      const user = await auth.signIn(e.email, pass);
+      setBusy(false); $('#authPass').value = '';
+      enterApp(user);
+    } else if (authMode === 'signup') {
+      const n = validateDisplayName(name); if (n.error) return fail(n.error, '#authName');
+      const e = validateEmail(email); if (e.error) return fail(e.error, '#authEmail');
+      const pw = validatePassword(pass); if (pw.error) return fail(pw.error, '#authPass');
+      setBusy(true, 'Se creează contul…');
+      const res = await auth.signUp(n.name, e.email, pass);
+      setBusy(false); $('#authPass').value = '';
+      if (res.needsConfirmation) {
+        setAuthMode('login', { keepMsg: true });
+        authOk(`Contul e creat. Ți-am trimis un email la ${e.email}: deschide linkul din el ca să-ți confirmi adresa, apoi intră în cont.`);
+      } else enterApp(res.user);
+    } else if (authMode === 'forgot') {
+      const e = validateEmail(email); if (e.error) return fail(e.error, '#authEmail');
+      setBusy(true, 'Se trimite…');
+      await auth.requestPasswordReset(e.email);
+      setBusy(false);
+      setAuthMode('login', { keepMsg: true });
+      authOk(`Dacă există un cont pentru ${e.email}, ți-am trimis un link pentru parola nouă. Verifică și dosarul Spam.`);
+    } else if (authMode === 'recovery') {
+      const pw = validatePassword(pass); if (pw.error) return fail(pw.error, '#authPass');
+      setBusy(true, 'Se salvează…');
+      await auth.setNewPassword(pass);
+      setBusy(false); $('#authPass').value = '';
+      history.replaceState(null, '', location.pathname);
+      const user = await auth.getCurrentUser();
+      if (user) { enterApp(user); toast('Parola a fost schimbată.'); }
+      else { setAuthMode('login', { keepMsg: true }); authOk('Parola a fost schimbată. Intră în cont cu parola nouă.'); }
+    }
+  } catch (err) {
+    setBusy(false);
+    authMsg(err.message || 'Ceva n-a mers. Încearcă din nou.');
+  }
 }
 
 async function signOut() {
@@ -77,7 +155,7 @@ async function signOut() {
   stopGPS();
   await auth.signOut();
   S.user = null; S.store = null;
-  $('#username').value = '';
+  $('#authPass').value = '';
   renderWelcome(); showScreen('welcome');
 }
 
@@ -101,6 +179,29 @@ function enterApp(user) {
   updateAll();
   fitTrail();
   startGPS();
+  syncFromAccount(user);
+}
+
+// Brings the account's saved scores onto this device. On a device that has
+// no progress yet for this account, stops with a saved score count as done,
+// so the player continues where they left off. Later, this device's own
+// trail state wins (so "Ia traseul de la capăt" works), but best scores still merge.
+async function syncFromAccount(user) {
+  const store = S.store, fresh = !store.hasLocalProgress();
+  const remote = await store.loadRemoteScores();
+  if (!remote || S.user !== user) return;
+  let changed = false;
+  for (const [id, score] of Object.entries(remote)) {
+    if (!S.byId.has(id)) continue;
+    const local = store.getBest(id);
+    if (local === undefined || score > local) store.setBest(id, score);
+    if (fresh && !isDone(id)) { S.prog.discovered.includes(id) || S.prog.discovered.push(id); S.prog.completed.push(id); changed = true; }
+  }
+  if (changed) {
+    saveProg(); listSig = ''; clearRoute();
+    updateAll(); fitTrail();
+    toast('Ți-am adus progresul salvat în cont.');
+  }
 }
 
 /* ===================== MAP ===================== */
@@ -522,7 +623,10 @@ function quizAct(act, el) {
     else {
       q.done = true;
       const best = S.store.getBest(p.id);
-      if (best === undefined || q.score > best) S.store.setBest(p.id, q.score);
+      if (best === undefined || q.score > best) {
+        S.store.setBest(p.id, q.score);
+        S.store.saveRemoteScore(p.id, q.score).then(ok => { if (!ok) toast('Scorul nu a putut fi salvat în cont. Verifică conexiunea.'); });
+      }
       if (!isDone(p.id)) {
         q.unlocked = true;
         completeStop(p.id);   // the only place the trail advances
@@ -559,11 +663,8 @@ function resetProgress() {
 
 /* ===================== EVENTS ===================== */
 function bindEvents() {
-  $('#nameForm').addEventListener('submit', e => { e.preventDefault(); signIn($('#username').value); });
-  $('#username').addEventListener('input', e => {
-    const v = e.target.value.trim() ? validateUsername(e.target.value) : {};
-    $('#nameErr').textContent = v.error || '';
-  });
+  $('#authForm').addEventListener('submit', e => { e.preventDefault(); submitAuth(); });
+  $('#authForm').addEventListener('input', () => authMsg(''));
 
   document.addEventListener('click', e => {
     if (e.target === $('#sheet')) { closeSheet(); return; }
@@ -579,7 +680,13 @@ function bindEvents() {
         mountMinigame($('#minigameRoot'), { user: S.user, places: S.places, completed: [...S.prog.completed] });
         break;
       case 'backtomap': showScreen('app'); map && map.refresh(); break;
-      case 'pickuser': signIn(el.dataset.name); break;
+      case 'authmode': setAuthMode(el.dataset.mode); break;
+      case 'peek': {
+        const inp = $('#authPass'), show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password'; el.textContent = show ? 'Ascunde' : 'Arată';
+        el.setAttribute('aria-label', show ? 'Ascunde parola' : 'Arată parola');
+        break;
+      }
       case 'signout': closeMenu(); signOut(); break;
       case 'resetprog': closeMenu(); resetProgress(); break;
       case 'open': if (isVisible(id)) openSheet(id); break;
@@ -630,7 +737,12 @@ async function boot() {
     return;
   }
   buildTeleportButtons();
+  // A password-reset link opens the page in recovery mode.
+  const toRecovery = () => { authMode = 'recovery'; S.user = null; stopGPS(); renderWelcome(); showScreen('welcome'); };
+  auth.onPasswordRecovery(toRecovery);
+  if (RECOVERY_IN_URL) { toRecovery(); return; }
   const user = await auth.getCurrentUser();
+  if (authMode === 'recovery') return;
   if (user) enterApp(user);
   else { renderWelcome(); showScreen('welcome'); }
 }

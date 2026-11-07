@@ -20,8 +20,8 @@ index.html              page structure only (front page + app)
 css/styles.css          all styling, theme colours at the top
 js/config.js            settings: radius, map tiles, routing servers, data paths
 js/app.js               main controller: screens, trail logic, sheet, trivia (Romanian UI text lives here and in index.html)
-js/auth.js              username sign-in (swap for real accounts here)
-js/store.js             per-user saved progress, scores and photos
+js/auth.js              account layer (Supabase email + password)
+js/store.js             per-user progress and photos (browser) + scores (Supabase)
 js/data.js              loads and validates the CSV database
 js/csv.js               CSV parser
 js/map.js               Leaflet map wrapper (pins, route line, user dot)
@@ -87,6 +87,26 @@ Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`): blue, r
 
 For each stop the app shows, in order: a photo the user added on their device, the `photo` from the CSV, or the lead image of the stop's Wikipedia article as a placeholder. To replace a placeholder, put the file in `assets/photos/` and set the `photo` and `photo_credit` columns. Only use photos you have the rights to.
 
-## Accounts
+## Accounts (Supabase)
 
-Sign-in is username-only and stored in the browser (`js/auth.js`, `LocalUsernameAuth`). To move to real accounts, write a class with the same four methods (`getCurrentUser`, `signIn`, `signOut`, `knownUsers`) and export it as `auth`; then point `js/store.js` at your backend if progress should sync across devices.
+Sign-in uses Supabase email + password accounts (project `scplcjroxictdslyrfez`).
+
+```
+database/supabase.js    Supabase client (project URL + publishable key)
+database/auth.js        sign up / in / out, password reset, auth events
+database/profiles.js    the signed-in user's row in `profiles`
+database/scores.js      save_place_score RPC and the `place_scores` table
+js/backend.js           loads database/ lazily so the app still opens if Supabase is unreachable
+js/auth.js              account layer for the UI: validation + Romanian error messages
+```
+
+What the front page does:
+
+- **Intră în cont**: email + password.
+- **Cont nou**: display name, email, password (min. 6 characters). The display name is stored as `display_name` in the user metadata; the name shown in the app comes from `profiles`, falling back to that metadata.
+- **Ai uitat parola?**: sends a reset email; the link opens the app in "Alege o parolă nouă" mode.
+- If "Confirm email" is on in Supabase, sign-up shows a message to confirm the address first.
+
+Scores: when a trivia round ends with a new best score, it is sent with `save_place_score(p_place_id, p_score)`, where `p_place_id` is the location id from the CSV (e.g. `college`, text). On a device with no saved progress for that account, places with a score in `place_scores` count as finished, so the player continues where they left off. Trail progress itself (discovered / finished on this device) and own photos stay in the browser.
+
+Supabase settings to check (Dashboard → Authentication → URL Configuration): set **Site URL** to where the app is hosted, and add the same address (and `http://localhost:8000/` for testing) to **Redirect URLs**, otherwise confirmation and reset links won't return to the app.

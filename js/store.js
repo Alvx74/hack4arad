@@ -1,8 +1,10 @@
-// Per-user saved state: trail progress, best trivia scores, own photos.
-// Stored in localStorage for now. To move it to a server, keep these
-// method names and swap the bodies for API calls.
+// Per-user saved state.
+//   On this device (localStorage): trail progress, best scores cache, own photos.
+//   In Supabase (database/scores.js): best trivia score per place, tied to the account,
+//   so a player who signs in on a new device keeps the stops they finished.
 
 import { STORAGE_PREFIX } from './config.js';
+import { backend } from './backend.js';
 
 export function createUserStore(userId) {
   const base = STORAGE_PREFIX + 'user:' + userId + ':';
@@ -23,6 +25,26 @@ export function createUserStore(userId) {
     getBest(placeId) { const v = get('best:' + placeId); const n = parseInt(v, 10); return isNaN(n) ? undefined : n; },
     setBest(placeId, score) { set('best:' + placeId, String(score)); },
     clearBests(ids) { ids.forEach(id => del('best:' + id)); },
+
+    // True once this device has saved any progress for this account.
+    hasLocalProgress() { return get('progress') !== null; },
+
+    // { placeId: bestScore } from the account, or null if it can't be reached.
+    async loadRemoteScores() {
+      try {
+        const rows = await (await backend()).getMyScores();
+        const best = {};
+        (rows || []).forEach(r => {
+          const id = r.place_id != null ? String(r.place_id) : null, sc = Number(r.score);
+          if (id && !isNaN(sc)) best[id] = Math.max(best[id] ?? -1, sc);
+        });
+        return best;
+      } catch (e) { console.warn('[scores] load failed', e); return null; }
+    },
+    async saveRemoteScore(placeId, score) {
+      try { await (await backend()).savePlaceScore(placeId, score); return true; }
+      catch (e) { console.warn('[scores] save failed', e); return false; }
+    },
 
     getPhoto(placeId) { const v = get('photo:' + placeId); return v && v.startsWith('data:image/') ? v : null; },
     setPhoto(placeId, dataUrl) { return set('photo:' + placeId, dataUrl); },

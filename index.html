@@ -30,7 +30,7 @@
         <span class="pill-dot" aria-hidden="true"></span><span id="userName"></span>
       </button>
       <div class="menu" id="accountMenu" role="menu" hidden>
-        <button role="menuitem" data-act="signout">Schimbă utilizatorul</button>
+        <button role="menuitem" data-act="signout">Deconectează-te</button>
         <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
       </div>
     </div>
@@ -58,23 +58,44 @@
       <h1 class="hero-title">pas cu pas</h1>
       <p class="hero-sub">Un traseu pietonal prin centrul orașului. Fiecare oprire rămâne o umbră pe hartă până ajungi aproape, apoi îți spune povestea ei.</p>
 
-      <form id="nameForm" class="start-form" novalidate>
-        <label for="username" class="sr-only">Numele tău</label>
-        <input id="username" name="username" type="text" autocomplete="nickname" maxlength="24" placeholder="Cum te numești?" required>
-        <button class="btn primary lg" type="submit">Începe traseul</button>
-      </form>
-      <div class="err" id="nameErr" role="alert"></div>
-
-      <div id="knownWrap" class="known" hidden>
-        <span>Continuă ca</span>
-        <div id="knownUsers" class="known-list"></div>
+      <div class="auth-card" id="authCard">
+        <div class="auth-tabs" role="tablist" id="authTabs">
+          <button type="button" role="tab" data-act="authmode" data-mode="login" id="tabLogin">Intră în cont</button>
+          <button type="button" role="tab" data-act="authmode" data-mode="signup" id="tabSignup">Cont nou</button>
+        </div>
+        <h2 class="auth-title" id="authTitle" hidden></h2>
+        <p class="auth-lead" id="authLead" hidden></p>
+        <form id="authForm" novalidate>
+          <label class="field" id="fName">
+            <span>Nume afișat</span>
+            <input id="authName" type="text" autocomplete="nickname" maxlength="24" placeholder="Cum să-ți spunem?">
+          </label>
+          <label class="field" id="fEmail">
+            <span>Email</span>
+            <input id="authEmail" type="email" autocomplete="email" inputmode="email" placeholder="nume@exemplu.ro">
+          </label>
+          <label class="field" id="fPass">
+            <span id="passLabel">Parolă</span>
+            <span class="pass-wrap">
+              <input id="authPass" type="password" autocomplete="current-password">
+              <button type="button" class="peek" data-act="peek" aria-label="Arată parola">Arată</button>
+            </span>
+          </label>
+          <div class="err" id="authErr" role="alert"></div>
+          <div class="okmsg" id="authOk" role="status" hidden></div>
+          <button class="btn primary lg block" type="submit" id="authSubmit">Intră în cont</button>
+        </form>
+        <div class="auth-links">
+          <button type="button" class="linkbtn" data-act="authmode" data-mode="forgot" id="forgotLink">Ai uitat parola?</button>
+          <button type="button" class="linkbtn" data-act="authmode" data-mode="login" id="backLink" hidden>← Înapoi la intrare</button>
+        </div>
       </div>
 
       <div class="hero-rule" aria-hidden="true"></div>
       <ul class="facts">
         <li><b id="stopCount">–</b> opriri pe traseu</li>
         <li>Întrebări la fiecare oprire</li>
-        <li>Gratuit, direct din browser</li>
+        <li>Gratuit, cu cont personal</li>
       </ul>
     </div>
   </div>
@@ -86,7 +107,7 @@
       <li class="how-card c-red"><span>2</span><h3>Descoperă locul</h3><p>Când ajungi aproape, umbra se transformă într-un loc cu poză și poveste.</p></li>
       <li class="how-card c-gold"><span>3</span><h3>Răspunde la întrebări</h3><p>După întrebări, aplicația te trimite singură spre oprirea următoare.</p></li>
     </ol>
-    <p class="fineprint">Progresul se salvează pe acest dispozitiv, sub numele ales. Pentru indicații ai nevoie de acces la locație.</p>
+    <p class="fineprint">Scorurile se salvează în contul tău, așa că le regăsești și pe alt telefon. Pentru indicații ai nevoie de acces la locație.</p>
   </div>
 </section>
 
