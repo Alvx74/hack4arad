@@ -30,6 +30,7 @@
         <span class="pill-dot" aria-hidden="true"></span><span id="userName"></span>
       </button>
       <div class="menu" id="accountMenu" role="menu" hidden>
+        <button role="menuitem" data-act="routes">Schimbă traseul</button>
         <button role="menuitem" data-act="signout">Deconectează-te</button>
         <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
       </div>
@@ -111,6 +112,16 @@
   </div>
 </section>
 
+<!-- ============ ALEGEREA TRASEULUI ============ -->
+<section id="routeSelect" class="screen" hidden>
+  <div class="route-select-wrap">
+    <p class="kicker">Alege-ți aventura</p>
+    <h1>Ce traseu vrei să explorezi?</h1>
+    <p class="muted">Alege unul dintre cele trei trasee. Misiunile secundare sunt disponibile separat pe hartă, indiferent de traseul ales.</p>
+    <div class="route-choices" id="routeChoices"></div>
+  </div>
+</section>
+
 <!-- ============ APLICAȚIA ============ -->
 <main id="app" class="screen" hidden>
   <div class="band">
@@ -160,6 +171,12 @@
     <section>
       <h2 class="list-title">Traseul tău</h2>
       <ul class="places" id="placeList"></ul>
+    </section>
+
+    <section class="sidequests-section">
+      <h2 class="list-title">Misiuni secundare</h2>
+      <p class="muted sidequests-lead">Apropie-te de aceste locuri pentru a debloca misiunile. Nu schimbă progresul traseului principal.</p>
+      <ul class="places" id="sideQuestList"></ul>
     </section>
 
     <!-- Developer tools (English on purpose), collapsed at the bottom of the page -->
