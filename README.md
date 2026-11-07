@@ -75,7 +75,12 @@ Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`): blue, r
 
 ## Photos
 
-For each stop the app shows, in order: a photo the user added on their device, the `photo` from the CSV, or the lead image of the stop's Wikipedia article as a placeholder. To replace a placeholder, put the file in `assets/photos/` and set the `photo` and `photo_credit` columns. Only use photos you have the rights to.
+Each place's `photo` field in `data/game-data.json` can be:
+
+- `commons:File name.jpg` – a free-licensed photo on Wikimedia Commons. The app asks Commons for a 960 px version and shows the author and licence under the photo (linked to the file page), which is what CC BY / CC BY-SA require.
+- a path like `assets/photos/place.jpg` or any image URL, with the credit in `photoCredit`.
+
+Leave it empty and the stop shows "Încă nu avem o fotografie" with a link to search for one. Don't hotlink photos from Google Images: they are copyrighted. Use Commons, your own photos, or ones you have permission for.
 
 ## Accounts (Supabase)
 
