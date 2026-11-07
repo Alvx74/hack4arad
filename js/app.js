@@ -11,6 +11,8 @@ import { TrailMap } from './map.js';
 import { mountMinigame, unmountMinigame } from './minigame.js';
 import { confetti } from './confetti.js';
 import { loadLeaderboard, renderLeaderboard, setSort, myStanding } from './leaderboard.js';
+import { startSky, stopSky } from './sky.js';
+import { startTour, next as tourNext, skip as tourSkip } from './tour.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -72,6 +74,7 @@ function showScreen(name) {
   $('#hdrRight').hidden = !SIGNED_IN_SCREENS.includes(name);
   document.body.dataset.screen = name;
   setPanel('');
+  if (name === 'welcome') startSky($('#sky')); else stopSky();
   $('#leaderboardBtn').classList.toggle('active', name === 'leaderboard');
   closeMenu();
   window.scrollTo(0, 0);
@@ -118,7 +121,6 @@ function setBusy(on, label) {
 }
 
 function renderWelcome() {
-  $('#stopCount').textContent = S.routes.length ? Math.max(...S.routes.map(r => r.locationIds.length)) : '–';
   setAuthMode(authMode === 'recovery' ? 'recovery' : 'login');
 }
 
@@ -240,8 +242,8 @@ function showDashboard() {
   $('#dashHello').textContent = 'Salut, ' + S.user.name + '!';
   const route = S.routes.find(r => r.id === S.selectedRouteId) || savedRoute();
   const left = route ? route.locationIds.filter(id => !isDone(id)).length : 0;
-  $('#dashMapGo').textContent = !route ? 'Alege un traseu →'
-    : left ? 'Continuă ' + route.name + ' →' : 'Alege un traseu nou →';
+  $('#dashMapGo').textContent = !route ? 'Pornește →'
+    : left ? 'Continuă ' + route.name + ' →' : 'Alege alt traseu →';
   showScreen('dashboard');
   refreshDashboardStats();
 }
@@ -297,6 +299,32 @@ function startSelectedRoute(routeId) {
   if (switching) fitTrail();
   if (S.watchId === null) startGPS();
   syncFromAccount(S.user);
+  if (!S.store.tourSeen() || S.tourPending) {
+    S.tourPending = false;
+    setTimeout(() => { if (screen === 'app') runTour(); }, 450);
+  }
+}
+
+/* ===================== WALKTHROUGH ===================== */
+// Shown the first time a player opens the map; "Cum se joacă" in the menu replays it.
+function runTour() {
+  closeSheet(); setPanel('');
+  const m = isMobile(), R = S.radius;
+  startTour([
+    { title: 'Cum se joacă',
+      body: `<ol class="tour-rules">
+        <li><span><b>Mergi</b> spre umbra cu <span class="k">?</span> de pe hartă.</span></li>
+        <li><span>La <b>${R} m</b> de ea, locul se dezvăluie: poză, poveste, 3 întrebări.</span></li>
+        <li><span><b>Răspunde</b> și harta te duce la oprirea următoare.</span></li>
+        <li><span>Totul corect din prima = <b>first blood</b>: puncte duble.</span></li>
+      </ol>` },
+    { title: 'Progresul tău', body: 'La ce oprire ești, din tot traseul.', target: () => $('#app .band') },
+    { title: 'Harta', body: '<b>Punctul roșu</b> ești tu. <b>Umbra cu ?</b> e oprirea următoare. <b>Stelele galbene</b> sunt misiuni bonus.', target: () => $('.mapbox') },
+    { title: 'Drumul', body: 'Distanța, timpul și următorul viraj.' + (m ? ' Atinge liniuța de sus pentru toți pașii.' : ''), target: () => $('#routeCard') },
+    { title: 'Opririle', body: 'Când ajungi aproape, deschide oprirea de aici sau atingând-o pe hartă.', target: () => $(m ? '#dockStops' : '#panelStops') },
+    { title: 'Misiuni secundare', body: 'Apar doar când treci pe lângă ele și nu schimbă traseul.', target: () => $(m ? '#dockQuests' : '#panelQuests') },
+    { title: 'Clasament', body: 'Vezi cine are cele mai multe puncte. Spor la explorat!', target: () => $('#leaderboardBtn') },
+  ], { onEnd: () => { S.store.setTourSeen(); window.scrollTo(0, 0); map && map.refresh(); } });
 }
 
 // Brings the account's saved scores onto this device. On a device that has
@@ -933,6 +961,16 @@ function resetProgress() {
 
 /* ===================== EVENTS ===================== */
 function bindEvents() {
+  // Dashboard tiles lean towards the pointer (fun detail; off for reduced motion).
+  document.querySelectorAll('.dash-card').forEach(card => {
+    card.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const r = card.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      card.style.setProperty('--rx', (-y * 6).toFixed(2) + 'deg'); card.style.setProperty('--ry', (x * 8).toFixed(2) + 'deg');
+    });
+    card.addEventListener('pointerleave', () => { card.style.removeProperty('--rx'); card.style.removeProperty('--ry'); });
+  });
+
   $('#authForm').addEventListener('submit', e => { e.preventDefault(); submitAuth(); });
   $('#authForm').addEventListener('input', () => authMsg(''));
 
@@ -946,6 +984,13 @@ function bindEvents() {
       case 'menu': toggleMenu(); break;
       case 'routes': closeSheet(); renderRouteChoices(); showScreen('routeSelect'); break;
       case 'theme': toggleTheme(); break;
+      case 'tour':   // replay; if no route is picked yet it starts once one is
+        closeMenu();
+        if (screen !== 'app') { S.tourPending = true; openMap(); }
+        if (screen === 'app') { S.tourPending = false; setTimeout(runTour, 300); }
+        break;
+      case 'tournext': tourNext(); break;
+      case 'tourskip': tourSkip(); break;
       case 'celnew': closeCelebration(); renderRouteChoices(); showScreen('routeSelect'); break;
       case 'celclose': closeCelebration(); break;
       case 'panel': setPanel(document.body.classList.contains('panel-' + el.dataset.panel) ? '' : el.dataset.panel); break;

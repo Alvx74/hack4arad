@@ -73,7 +73,11 @@ The moon/sun button in the header switches themes; the choice is saved in the br
 
 ## Design
 
-Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`): blue, red, gold and oak-leaf green, defined as variables at the top of `css/styles.css` (map colours in `js/config.js`). Change them there for aesthetic tweaks.
+Simple and square: Roboto everywhere (18 px base), large bold titles, 2 px edges and hard offset shadows that press down when clicked. Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`), also shown as the four-colour stripe under the header; they are variables at the top of `css/styles.css` (map colours in `js/config.js`).
+
+- `js/sky.js`: the login background, drifting "constellations" that react to the mouse or finger (one still frame if the device asks for reduced motion).
+- `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
+- After sign-in the dashboard has two tiles: **Vizionare pe viu** (GPS map) and **Joc interactiv** (minigame).
 
 ## Photos
 

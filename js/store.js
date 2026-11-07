@@ -30,6 +30,10 @@ export function createUserStore(userId) {
     getRoute() { return get('route'); },
     setRoute(routeId) { set('route', routeId); },
 
+    // Whether the map walkthrough was already shown to this account on this device.
+    tourSeen() { return get('tour') === '1'; },
+    setTourSeen() { set('tour', '1'); },
+
     // True once this device has saved any progress for this account.
     hasLocalProgress() { return get('progress') !== null; },
 

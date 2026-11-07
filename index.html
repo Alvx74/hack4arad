@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" href="assets/brand/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@500&display=swap">
 <!-- Map library (kept locally in vendor/ so the app does not depend on a CDN) -->
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="css/styles.css">
@@ -37,6 +37,7 @@
           <div class="menu" id="accountMenu" role="menu" hidden>
             <button role="menuitem" data-act="home">Acasă</button>
             <button role="menuitem" data-act="routes">Schimbă traseul</button>
+            <button role="menuitem" data-act="tour">Cum se joacă</button>
             <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
             <button role="menuitem" data-act="signout">Deconectează-te</button>
           </div>
@@ -48,6 +49,8 @@
       </button>
     </div>
   </div>
+  <!-- coat-of-arms stripe -->
+  <div class="arms-stripe" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 </header>
 
 <!-- ============ ÎNCĂRCARE / EROARE ============ -->
@@ -65,11 +68,14 @@
 <!-- ============ PAGINA DE START ============ -->
 <section id="welcome" class="screen" hidden>
   <div class="hero">
+    <!-- js/sky.js draws drifting "constellations" here -->
+    <canvas class="sky" id="sky" aria-hidden="true"></canvas>
     <div class="hero-in">
-      <p class="hero-pre">Descoperă Aradul</p>
-      <h1 class="hero-title">pas cu pas</h1>
-      <p class="hero-sub">Un traseu pietonal prin centrul orașului. Fiecare oprire rămâne o umbră pe hartă până ajungi aproape, apoi îți spune povestea ei.</p>
-
+      <div class="hero-copy">
+        <p class="hero-pre">Descoperă Aradul</p>
+        <h1 class="hero-title">pas<br>cu pas.</h1>
+        <p class="hero-sub">Mergi prin oraș, deblochează locuri, răspunde la întrebări.</p>
+      </div>
       <div class="auth-card" id="authCard">
         <div class="auth-tabs" role="tablist" id="authTabs">
           <button type="button" role="tab" data-act="authmode" data-mode="login" id="tabLogin">Intră în cont</button>
@@ -103,23 +109,7 @@
         </div>
       </div>
 
-      <div class="hero-rule" aria-hidden="true"></div>
-      <ul class="facts">
-        <li><b id="stopCount">–</b> opriri pe traseu</li>
-        <li>Întrebări la fiecare oprire</li>
-        <li>Gratuit, cu cont personal</li>
-      </ul>
     </div>
-  </div>
-
-  <div class="section">
-    <h2 class="section-title">Cum funcționează</h2>
-    <ol class="how">
-      <li class="how-card c-blue"><span>1</span><h3>Urmează harta</h3><p>Harta îți arată drumul până la următoarea oprire.</p></li>
-      <li class="how-card c-red"><span>2</span><h3>Descoperă locul</h3><p>Când ajungi aproape, umbra se transformă într-un loc cu poză și poveste.</p></li>
-      <li class="how-card c-gold"><span>3</span><h3>Răspunde la întrebări</h3><p>După întrebări, aplicația te trimite singură spre oprirea următoare.</p></li>
-    </ol>
-    <p class="fineprint">Scorurile se salvează în contul tău, așa că le regăsești și pe alt telefon. Pentru indicații ai nevoie de acces la locație.</p>
   </div>
 </section>
 
@@ -127,33 +117,27 @@
 <section id="dashboard" class="screen" hidden>
   <div class="dash-wrap">
     <div class="dash-head">
-      <p class="kicker">Bine ai venit</p>
       <h1 id="dashHello">Salut!</h1>
-      <div class="dash-stats" id="dashStats">
-        <div><b id="dashScore">–</b><span>puncte</span></div>
-        <div><b id="dashFB">–</b><span>first blood</span></div>
-        <div><b id="dashRank">–</b><span>loc în clasament</span></div>
-      </div>
+      <p class="dash-line" id="dashStats"><span><b id="dashScore">–</b> puncte</span><span><b id="dashFB">–</b> first blood</span><span>locul <b id="dashRank">–</b></span></p>
     </div>
     <div class="dash-cards">
       <button class="dash-card c-map" data-act="openmap">
-        <span class="dash-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg></span>
-        <span class="dash-body">
-          <span class="dash-title">Explorează orașul</span>
-          <span class="dash-desc">Harta cu GPS: trasee, întrebări la fiecare oprire și misiuni secundare.</span>
-          <span class="dash-go" id="dashMapGo">Alege un traseu →</span>
+        <span class="dash-art" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><path class="dm-road" d="M10 98 C 40 92, 34 62, 60 58 S 98 30, 110 18"/><circle class="dm-dot" cx="10" cy="98" r="6"/><g class="dm-pin"><path d="M88 14c-11 0-19 8-19 18 0 14 19 32 19 32s19-18 19-32c0-10-8-18-19-18z"/><circle cx="88" cy="32" r="7"/></g></svg>
         </span>
+        <span class="dash-title">Vizionare<br>pe viu</span>
+        <span class="dash-desc">Harta cu GPS. Mergi la locuri și deblochează-le.</span>
+        <span class="dash-go" id="dashMapGo">Pornește →</span>
       </button>
       <button class="dash-card c-game" data-act="minigame">
-        <span class="dash-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="4"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="15.5" cy="11.5" r="1"/><circle cx="18" cy="13.5" r="1"/></svg></span>
-        <span class="dash-body">
-          <span class="dash-title">Minijoc</span>
-          <span class="dash-desc">Un joc 2D prin locurile Aradului.</span>
-          <span class="dash-go">În curând →</span>
+        <span class="dash-art" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><rect class="dg-pad" x="14" y="38" width="92" height="50"/><path class="dg-cross" d="M36 52v22M25 63h22"/><rect class="dg-a" x="74" y="54" width="9" height="9"/><rect class="dg-b" x="86" y="64" width="9" height="9"/></svg>
         </span>
+        <span class="dash-title">Joc<br>interactiv</span>
+        <span class="dash-desc">Un joc 2D prin locurile Aradului.</span>
+        <span class="dash-go">În curând →</span>
       </button>
     </div>
-    <button class="btn" data-act="leaderboard">Vezi clasamentul →</button>
   </div>
 </section>
 
@@ -318,7 +302,7 @@
 <footer class="site-footer">
   <div class="foot-in">
     <span>Arad Explorer · Hack4Arad</span>
-    <span>Hartă © OpenStreetMap, CARTO · Rute: FOSSGIS/OSRM · Fotografii provizorii: Wikipedia / Wikimedia Commons</span>
+    <span>Hartă © OpenStreetMap, CARTO · Rute FOSSGIS/OSRM · Foto Wikimedia Commons</span>
   </div>
 </footer>
 
@@ -341,6 +325,19 @@
 </div>
 
 <div id="sheet" hidden><div class="sheet-in" id="sheetBody" role="dialog" aria-modal="true"></div></div>
+<!-- First-visit walkthrough for the map (js/tour.js) -->
+<div id="tour" class="tour" hidden>
+  <div class="tour-hole" id="tourHole"></div>
+  <div class="tour-card" id="tourCard" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <p class="tour-step" id="tourStep"></p>
+    <h2 id="tourTitle"></h2>
+    <div class="tour-body" id="tourBody"></div>
+    <div class="tour-actions">
+      <button class="btn" data-act="tourskip" id="tourSkip">Sari peste</button>
+      <button class="btn primary" data-act="tournext" id="tourNext">Mai departe</button>
+    </div>
+  </div>
+</div>
 <div id="toast" hidden role="status"></div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
