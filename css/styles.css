@@ -74,7 +74,11 @@ p { margin: 0; }
 .brand span { font-size: 1.35rem; font-weight: 500; letter-spacing: -.02em; }
 .brand b { font-weight: 800; }
 
+.hdr-right { display: flex; align-items: center; gap: 6px; }
 .account { position: relative; }
+.nav-link { border: 0; background: none; padding: 8px 12px; border-radius: 8px; font: 600 .95rem var(--font); color: var(--text); cursor: pointer; }
+.nav-link:hover { background: var(--bg); }
+.nav-link.active { color: var(--red); box-shadow: inset 0 -2px 0 var(--red); border-radius: 0; }
 .pill {
   display: inline-flex; align-items: center; gap: 8px; max-width: 52vw;
   padding: 8px 18px; border-radius: 999px; border: 0; background: var(--red); color: #fff;
@@ -198,6 +202,11 @@ input[type=range] { width: 100%; accent-color: var(--blue); }
 .sliderrow { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
 .val { min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 
+/* Minigame placeholder */
+.mg-stage { min-height: clamp(360px, 60vh, 600px); border: 1px dashed #c9ccdb; border-radius: var(--radius); background: var(--surface); display: grid; place-items: center; }
+.mg-empty { text-align: center; padding: 24px; }
+.mg-empty h2 { font-size: 1.8rem; margin: 2px 0 6px; }
+
 /* ===================== STOP SHEET ===================== */
 #sheet { position: fixed; inset: 0; background: var(--overlay); z-index: 1500; display: flex; align-items: flex-end; justify-content: center; }
 .sheet-in { background: var(--surface); width: 100%; max-width: 700px; max-height: 92%; overflow: auto; border-radius: 20px 20px 0 0; padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px)); border-top: 4px solid var(--red); }
@@ -243,7 +252,16 @@ input[type=range] { width: 100%; accent-color: var(--blue); }
 .site-footer { border-top: 1px solid var(--line); background: var(--surface); }
 .foot-in { max-width: 1080px; margin: 0 auto; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px 20px; flex-wrap: wrap; justify-content: space-between; font-size: .8rem; color: var(--muted); }
 
-#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 10px; border-left: 4px solid var(--gold); max-width: min(92%, 520px); z-index: 2000; font-size: .92rem; box-shadow: 0 10px 30px rgba(11, 15, 58, .3); }
+/* Alerts: centred on screen; clicks pass through so they never block the page */
+#toast {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2000;
+  width: max-content; max-width: min(88vw, 420px); padding: 16px 20px; border-radius: 12px;
+  background: var(--ink); color: #fff; text-align: center; font-size: 1rem; font-weight: 600; line-height: 1.45;
+  box-shadow: 0 16px 40px rgba(11, 15, 58, .35); pointer-events: none;
+  animation: toast-in .18s ease-out;
+}
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -46%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+@media (prefers-reduced-motion: reduce) { #toast { animation: none; } }
 
 @media (max-width: 560px) {
   .start-form { flex-direction: column; }

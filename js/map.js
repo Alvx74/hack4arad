@@ -14,7 +14,10 @@ export class TrailMap {
     L.tileLayer(TILES.url, TILES.options).addTo(this.map).on('tileerror', () => {
       if (!warned) { warned = true; onTileError && onTileError(); }
     });
-    this.routeLine = L.polyline([], { color: C.route, weight: 6, opacity: 0.85 }).addTo(this.map);
+    // Solid line = walking on streets; dotted = getting to/from the nearest street,
+    // or a straight-line guess while no street route is available.
+    this.routeLine = L.polyline([], { color: C.route, weight: 6, opacity: 0.85, lineJoin: 'round' }).addTo(this.map);
+    this.linkLine = L.polyline([], { color: C.route, weight: 4, opacity: 0.9, dashArray: '1 10', lineCap: 'round' }).addTo(this.map);
     this.acc = L.circle(START, { radius: 0, stroke: false, fillColor: C.accuracy, fillOpacity: 0.12, interactive: false });
     this.ring = L.circle(START, { radius: 500, color: C.ring, weight: 2, dashArray: '6 6', fillColor: C.ring, fillOpacity: 0.05, interactive: false });
     this.dot = L.circleMarker(START, { radius: 8, color: '#ffffff', weight: 3, fillColor: C.user, fillOpacity: 1, interactive: false });
@@ -60,7 +63,11 @@ export class TrailMap {
     }
   }
 
-  setRoute(points) { this.routeLine.setLatLngs(points || []); }
+  // solid: [[lat,lon]...]; dotted: list of such lines.
+  setRoute(solid, dotted) {
+    this.routeLine.setLatLngs(solid || []);
+    this.linkLine.setLatLngs((dotted || []).filter(l => l.length > 1));
+  }
 
   fitPoints(points, maxZoom = 17) {
     if (!points.length) return;

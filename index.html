@@ -23,7 +23,9 @@
       <img src="assets/brand/stema-arad.png" alt="" width="34" height="39">
       <span>Arad <b>Explorer</b></span>
     </a>
-    <div class="account" id="account" hidden>
+    <div class="hdr-right" id="hdrRight" hidden>
+    <button class="nav-link" id="minigameBtn" data-act="minigame">Minijoc</button>
+    <div class="account" id="account">
       <button class="pill" id="accountBtn" data-act="menu" aria-haspopup="true" aria-expanded="false">
         <span class="pill-dot" aria-hidden="true"></span><span id="userName"></span>
       </button>
@@ -31,6 +33,7 @@
         <button role="menuitem" data-act="signout">Schimbă utilizatorul</button>
         <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
       </div>
+    </div>
     </div>
   </div>
 </header>
@@ -161,6 +164,21 @@
     </details>
   </div>
 </main>
+
+<!-- ============ MINIJOC (placeholder) ============ -->
+<section id="minigame" class="screen" hidden>
+  <div class="wrap">
+    <div><button class="btn sm" data-act="backtomap">← Înapoi la hartă</button></div>
+    <!-- js/minigame.js mounts the game into this element -->
+    <div class="mg-stage" id="minigameRoot">
+      <div class="mg-empty">
+        <p class="kicker">Minijoc</p>
+        <h2>În curând</h2>
+        <p class="muted">Aici va apărea minijocul. Încă nu este gata.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <footer class="site-footer">
   <div class="foot-in">

@@ -4,10 +4,11 @@ import { DEFAULT_RADIUS, ARRIVED_METERS } from './config.js';
 import { loadTrail } from './data.js';
 import { auth, validateUsername } from './auth.js';
 import { createUserStore } from './store.js';
-import { haversine, fmtDist, fmtDur } from './geo.js';
+import { haversine, fmtDist, fmtDur, nearestOnLine, lineLength } from './geo.js';
 import { fetchRoute, stepText, currentStep } from './routing.js';
 import { findPhoto, searchPhotosUrl, fileToDataUrl } from './photos.js';
 import { TrailMap } from './map.js';
+import { mountMinigame, unmountMinigame } from './minigame.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -46,9 +47,13 @@ const routeTargetId = () => (S.revisitId && isDone(S.revisitId)) ? S.revisitId :
 const saveProg = () => S.store && S.store.saveProgress(S.prog);
 
 /* ===================== SCREENS / ACCOUNT ===================== */
+let screen = 'loading';
 function showScreen(name) {
-  ['loading', 'welcome', 'app', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
-  $('#account').hidden = name !== 'app';
+  if (screen === 'minigame' && name !== 'minigame') unmountMinigame();
+  screen = name;
+  ['loading', 'welcome', 'app', 'minigame', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
+  $('#hdrRight').hidden = name !== 'app' && name !== 'minigame';
+  $('#minigameBtn').classList.toggle('active', name === 'minigame');
   closeMenu();
   window.scrollTo(0, 0);
 }
@@ -133,7 +138,7 @@ function fitTrail() {
 function fitRoute() {
   if (!map) return;
   const r = routeState.data;
-  if (r && r.coords.length) map.fitPoints(r.coords);
+  if (r && r.track.length) map.fitPoints(r.track);
   else fitTrail();
 }
 
@@ -205,36 +210,65 @@ function clearRoute(why) {
   Object.assign(routeState, { targetId: null, from: null, data: null, status: why === 'arrived' ? 'arrived' : 'idle' });
 }
 
+// How far from the planned path the walker may stray before we plan a new one.
+// Grows with poor GPS accuracy so jitter doesn't trigger constant re-planning.
+const offRouteLimit = () => Math.min(90, Math.max(35, ((S.pos && S.pos.acc) || 0) * 1.5));
+
 function maybeReroute() {
   const id = routeTargetId();
   if (!S.pos || !id) { if (routeState.status !== 'idle') clearRoute(); return; }
   const p = place(id);
   if (haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) < ARRIVED_METERS) { if (routeState.status !== 'arrived') clearRoute('arrived'); return; }
   const changed = routeState.targetId !== id || routeState.status === 'arrived' || routeState.status === 'idle';
-  const moved = routeState.from ? haversine(S.pos.lat, S.pos.lon, routeState.from.lat, routeState.from.lon) : Infinity;
   const age = Date.now() - routeState.t;
   const retry = routeState.status === 'error' && age > 20000;
-  const drifted = routeState.status !== 'loading' && moved > 40 && age > 8000;
-  if (!changed && !retry && !drifted) return;
+  // The route is kept while the walker stays near it (including the dotted
+  // link from where they started to the nearest street). Only leaving it re-plans.
+  let strayed = false;
+  if (routeState.status === 'ok' && routeState.data && age > 5000) {
+    const n = nearestOnLine(S.pos, routeState.data.track);
+    strayed = !n || n.dist > offRouteLimit();
+  }
+  if (!changed && !retry && !strayed) return;
   const my = ++routeSeq;
   routeState.targetId = id; routeState.from = { lat: S.pos.lat, lon: S.pos.lon }; routeState.t = Date.now();
   if (changed) routeState.data = null;
-  routeState.status = 'loading';
+  routeState.status = routeState.data ? 'refresh' : 'loading';
   fetchRoute(routeState.from, p).then(res => {
     if (my !== routeSeq) return;
     routeState.t = Date.now();
-    routeState.data = res; routeState.status = res ? 'ok' : 'error';
+    if (res) { routeState.data = res; routeState.status = 'ok'; }
+    else routeState.status = routeState.data ? 'ok' : 'error';   // keep the old route if re-planning fails
     renderRoute();
     if (S.fitOnRoute) { S.fitOnRoute = false; fitRoute(); }
   });
   renderRoute();
 }
 
+// Splits the planned route into what is still ahead of the walker.
+function routeAhead(r) {
+  const n = nearestOnLine(S.pos, r.track);
+  const last = r.track.length - 2;                 // index of the road-end → destination segment
+  const ahead = [n.point, ...r.track.slice(n.index + 1)];
+  let solid, dotted = [];
+  if (n.index === 0) {                             // still getting to the street
+    solid = r.coords;
+    dotted.push([[S.pos.lat, S.pos.lon], r.coords[0]]);
+  } else if (n.index >= last) {                    // past the street, walking to the place
+    solid = [];
+  } else {
+    solid = [n.point, ...r.track.slice(n.index + 1, last + 1)];
+    if (n.dist > 8) dotted.push([[S.pos.lat, S.pos.lon], n.point]);
+  }
+  if (r.snapOut > 8 || n.index >= last) dotted.push([n.index >= last ? [S.pos.lat, S.pos.lon] : r.coords[r.coords.length - 1], r.dest]);
+  return { solid, dotted, remaining: lineLength(ahead) + (n.dist > 8 ? n.dist : 0), segment: n.index, last };
+}
+
 function renderRoute() {
   const id = routeTargetId(), empty = $('#routeEmpty'), body = $('#routeBody');
-  const setLine = pts => map && map.setRoute(pts);
+  const draw = (solid, dotted) => map && map.setRoute(solid, dotted);
   $('#followBtn').hidden = !(S.revisitId && isDone(S.revisitId));
-  const msg = t => { empty.hidden = false; body.hidden = true; empty.textContent = t; setLine([]); };
+  const msg = t => { empty.hidden = false; body.hidden = true; empty.textContent = t; draw([], []); };
   if (!id) return msg('Ai parcurs tot traseul. Poți reveni la orice oprire din lista de mai jos.');
   if (!S.pos) return msg('Așteptăm locația ta ca să-ți arătăm drumul…');
 
@@ -244,25 +278,40 @@ function renderRoute() {
   if (routeState.status === 'arrived' || d < ARRIVED_METERS) {
     $('#rSummary').textContent = 'Ai ajuns';
     $('#rNext').textContent = isDisc(id) ? 'Deschide oprirea din listă ca să citești povestea și să răspunzi la întrebări.' : 'Mai fă câțiva pași: locul se dezvăluie imediat.';
-    $('#rNote').textContent = ''; $('#rSteps').innerHTML = ''; setLine([]); return;
+    $('#rNote').textContent = ''; $('#rSteps').innerHTML = ''; draw([], []); return;
   }
   const r = routeState.data;
-  if (routeState.status === 'ok' && r && routeState.targetId === id) {
-    setLine(r.coords);
-    $('#rSummary').textContent = fmtDist(r.dist) + ' · ' + fmtDur(r.dur) + ' pe jos';
-    const ci = currentStep(r.steps, S.pos), nxt = ci >= 0 ? r.steps[Math.min(ci + 1, r.steps.length - 1)] : null;
-    $('#rNext').textContent = nxt ? (ci + 1 < r.steps.length ? 'Urmează: ' : 'Apoi: ') + stepText(nxt) : 'Urmează linia albastră de pe hartă.';
-    $('#rNote').textContent = r.label + '. Se actualizează dacă te abați de la drum.';
-    $('#rSteps').innerHTML = r.steps.map((s, i) => `<li class="${i === ci ? 'cur' : ''}">${esc(stepText(s))}${s.distance ? ' · ' + fmtDist(s.distance) : ''}</li>`).join('');
+  if (r && routeState.targetId === id && (routeState.status === 'ok' || routeState.status === 'refresh')) {
+    const a = routeAhead(r);
+    draw(a.solid, a.dotted);
+    $('#rSummary').textContent = fmtDist(a.remaining) + ' · ' + fmtDur(a.remaining / r.speed) + ' pe jos';
+
+    const toStreet = haversine(S.pos.lat, S.pos.lon, r.coords[0][0], r.coords[0][1]);
+    let next, ci = -1;
+    if (a.segment === 0 && toStreet > 15) next = 'Mergi până la cel mai apropiat drum (' + fmtDist(toStreet) + '), apoi urmează linia albastră.';
+    else if (a.segment >= a.last) next = 'Ai ieșit de pe stradă: mai ai ' + fmtDist(d) + ' până la loc, pe linia punctată.';
+    else {
+      ci = currentStep(r.steps, S.pos);
+      const nxt = ci >= 0 ? r.steps[Math.min(ci + 1, r.steps.length - 1)] : null;
+      next = nxt ? (ci + 1 < r.steps.length ? 'Urmează: ' : 'Apoi: ') + stepText(nxt) : 'Urmează linia albastră de pe hartă.';
+    }
+    $('#rNext').textContent = next;
+
+    const items = [];
+    if (r.snapIn > 15) items.push(`<li class="${a.segment === 0 ? 'cur' : ''}">Mergi până la cel mai apropiat drum · ${fmtDist(r.snapIn)}</li>`);
+    r.steps.forEach((s, i) => items.push(`<li class="${i === ci ? 'cur' : ''}">${esc(stepText(s))}${s.distance ? ' · ' + fmtDist(s.distance) : ''}</li>`));
+    if (r.snapOut > 15) items.push(`<li class="${a.segment >= a.last ? 'cur' : ''}">De la drum până la loc · ${fmtDist(r.snapOut)}</li>`);
+    $('#rSteps').innerHTML = items.join('');
+    $('#rNote').textContent = r.label + '. Linia punctată arată bucățile din afara străzilor. Ruta se recalculează doar dacă te abați de la ea.';
   } else if (routeState.status === 'loading') {
-    setLine([[S.pos.lat, S.pos.lon], [p.lat, p.lon]]);
+    draw([], [[[S.pos.lat, S.pos.lon], [p.lat, p.lon]]]);
     $('#rSummary').textContent = fmtDist(d);
     $('#rNext').textContent = 'Căutăm cel mai bun drum…';
     $('#rNote').textContent = ''; $('#rSteps').innerHTML = '';
   } else {
-    setLine([[S.pos.lat, S.pos.lon], [p.lat, p.lon]]);
+    draw([], [[[S.pos.lat, S.pos.lon], [p.lat, p.lon]]]);
     $('#rSummary').textContent = fmtDist(d) + ' în linie dreaptă';
-    $('#rNext').textContent = 'Indicațiile pe străzi nu sunt disponibile acum. Mergi în direcția liniei de pe hartă.';
+    $('#rNext').textContent = 'Indicațiile pe străzi nu sunt disponibile acum. Mergi în direcția liniei punctate de pe hartă.';
     $('#rNote').textContent = 'Serviciul de rute nu răspunde; reîncercăm automat.';
     $('#rSteps').innerHTML = '';
   }
@@ -524,6 +573,12 @@ function bindEvents() {
     const act = el.dataset.act, id = el.dataset.id;
     switch (act) {
       case 'menu': toggleMenu(); break;
+      case 'minigame':
+        if (screen === 'minigame') { showScreen('app'); map && map.refresh(); break; }
+        closeSheet(); showScreen('minigame');
+        mountMinigame($('#minigameRoot'), { user: S.user, places: S.places, completed: [...S.prog.completed] });
+        break;
+      case 'backtomap': showScreen('app'); map && map.refresh(); break;
       case 'pickuser': signIn(el.dataset.name); break;
       case 'signout': closeMenu(); signOut(); break;
       case 'resetprog': closeMenu(); resetProgress(); break;

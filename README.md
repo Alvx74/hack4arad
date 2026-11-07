@@ -26,6 +26,7 @@ js/data.js              loads and validates the CSV database
 js/csv.js               CSV parser
 js/map.js               Leaflet map wrapper (pins, route line, user dot)
 js/routing.js           walking directions (OSRM)
+js/minigame.js          minigame placeholder (mountMinigame / unmountMinigame)
 js/photos.js            photo lookup (own photo → CSV photo → Wikipedia placeholder)
 js/geo.js               distance and formatting helpers
 data/path.csv           trail order
@@ -71,6 +72,7 @@ A location with no trivia file completes as soon as it's discovered.
 - Directions always point at the first unfinished stop on the path (stop 1 for a new user).
 - A stop is discovered when you're within the interaction radius (300 m by default, see `js/config.js`).
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
+- Walking directions start from wherever you are: a dotted line leads to the nearest street, then the solid line follows streets. The route is planned once and followed; it is only re-planned when you stray from it (35–90 m depending on GPS accuracy).
 - Finished stops can be revisited from the list; "Înapoi la traseu" returns to the current stop.
 
 ## Developer tools

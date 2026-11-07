@@ -2,7 +2,12 @@
 import { ROUTERS, ROUTE_QUERY, ROUTE_TIMEOUT_MS } from './config.js';
 import { haversine, cardinal } from './geo.js';
 
-// Returns { coords:[[lat,lon]...], steps, dist, dur, label } or null.
+// Returns a walking route or null:
+//   coords  road geometry [[lat,lon]...] (starts/ends on the nearest walkable way)
+//   origin, dest   the real start point and destination [lat,lon]
+//   snapIn, snapOut   metres from origin to the road, and from the road to dest
+//   track   origin → road → dest, used to follow the walker along the route
+//   steps, dist (road metres), dur (seconds), label
 export async function fetchRoute(from, to) {
   const c = `${from.lon},${from.lat};${to.lon},${to.lat}`;
   for (const r of ROUTERS) {
@@ -14,10 +19,18 @@ export async function fetchRoute(from, to) {
       const j = await res.json();
       const route = j.code === 'Ok' && j.routes && j.routes[0];
       if (!route || !route.geometry) continue;
+      const coords = route.geometry.coordinates.map(p => [p[1], p[0]]);
+      if (!coords.length) continue;
+      const origin = [from.lat, from.lon], dest = [to.lat, to.lon];
+      const snapIn = haversine(origin[0], origin[1], coords[0][0], coords[0][1]);
+      const last = coords[coords.length - 1];
+      const snapOut = haversine(last[0], last[1], dest[0], dest[1]);
       return {
-        coords: route.geometry.coordinates.map(p => [p[1], p[0]]),
+        coords, origin, dest, snapIn, snapOut,
+        track: [origin, ...coords, dest],
         steps: (route.legs && route.legs[0] && route.legs[0].steps) || [],
         dist: route.distance, dur: route.duration, label: r.label,
+        speed: route.duration > 0 ? route.distance / route.duration : 1.3,
       };
     } catch { /* try the next server */ }
   }
