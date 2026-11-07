@@ -21,3 +21,18 @@ export async function getMyProfile() {
 
     return data;
 }
+
+export async function loseFirstBlood() {
+    const { data: { user }, error: userError } =
+        await supabase.auth.getUser();
+
+    if (userError) throw userError;
+    if (!user) return;
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({ is_first_blood: false })
+        .eq('id', user.id);
+
+    if (error) throw error;
+}
