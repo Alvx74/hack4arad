@@ -29,12 +29,13 @@
     </a>
     <div class="hdr-tools">
       <div class="hdr-right" id="hdrRight" hidden>
-        <button class="nav-link" id="minigameBtn" data-act="minigame">Minijoc</button>
+        <button class="nav-link" id="leaderboardBtn" data-act="leaderboard">Clasament</button>
         <div class="account" id="account">
           <button class="pill" id="accountBtn" data-act="menu" aria-haspopup="true" aria-expanded="false">
             <span class="pill-dot" aria-hidden="true"></span><span id="userName"></span>
           </button>
           <div class="menu" id="accountMenu" role="menu" hidden>
+            <button role="menuitem" data-act="home">Acasă</button>
             <button role="menuitem" data-act="routes">Schimbă traseul</button>
             <button role="menuitem" data-act="resetprog">Ia traseul de la capăt</button>
             <button role="menuitem" data-act="signout">Deconectează-te</button>
@@ -119,6 +120,61 @@
       <li class="how-card c-gold"><span>3</span><h3>Răspunde la întrebări</h3><p>După întrebări, aplicația te trimite singură spre oprirea următoare.</p></li>
     </ol>
     <p class="fineprint">Scorurile se salvează în contul tău, așa că le regăsești și pe alt telefon. Pentru indicații ai nevoie de acces la locație.</p>
+  </div>
+</section>
+
+<!-- ============ PANOU (după autentificare) ============ -->
+<section id="dashboard" class="screen" hidden>
+  <div class="dash-wrap">
+    <div class="dash-head">
+      <p class="kicker">Bine ai venit</p>
+      <h1 id="dashHello">Salut!</h1>
+      <div class="dash-stats" id="dashStats">
+        <div><b id="dashScore">–</b><span>puncte</span></div>
+        <div><b id="dashFB">–</b><span>first blood</span></div>
+        <div><b id="dashRank">–</b><span>loc în clasament</span></div>
+      </div>
+    </div>
+    <div class="dash-cards">
+      <button class="dash-card c-map" data-act="openmap">
+        <span class="dash-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg></span>
+        <span class="dash-body">
+          <span class="dash-title">Explorează orașul</span>
+          <span class="dash-desc">Harta cu GPS: trasee, întrebări la fiecare oprire și misiuni secundare.</span>
+          <span class="dash-go" id="dashMapGo">Alege un traseu →</span>
+        </span>
+      </button>
+      <button class="dash-card c-game" data-act="minigame">
+        <span class="dash-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="4"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="15.5" cy="11.5" r="1"/><circle cx="18" cy="13.5" r="1"/></svg></span>
+        <span class="dash-body">
+          <span class="dash-title">Minijoc</span>
+          <span class="dash-desc">Un joc 2D prin locurile Aradului.</span>
+          <span class="dash-go">În curând →</span>
+        </span>
+      </button>
+    </div>
+    <button class="btn" data-act="leaderboard">Vezi clasamentul →</button>
+  </div>
+</section>
+
+<!-- ============ CLASAMENT ============ -->
+<section id="leaderboard" class="screen" hidden>
+  <div class="lb-wrap">
+    <div class="lb-head">
+      <div>
+        <h1>Clasament</h1>
+        <p class="muted"><b>First blood</b>: toate răspunsurile de la un loc corecte din prima încercare. Locul acela îți aduce puncte duble.</p>
+      </div>
+      <div class="seg" role="group" aria-label="Ordonează după">
+        <button data-act="lbsort" data-sort="score" class="on" aria-pressed="true">Scor</button>
+        <button data-act="lbsort" data-sort="fb" aria-pressed="false">First blood</button>
+      </div>
+    </div>
+    <div class="lb-box" id="lbBody"><p class="muted lb-loading">Se încarcă clasamentul…</p></div>
+    <div class="lb-actions">
+      <button class="btn" data-act="back">← Înapoi</button>
+      <button class="btn" data-act="lbrefresh">Reîmprospătează</button>
+    </div>
   </div>
 </section>
 
@@ -247,7 +303,7 @@
 <!-- ============ MINIJOC (placeholder) ============ -->
 <section id="minigame" class="screen" hidden>
   <div class="wrap">
-    <div><button class="btn sm" data-act="backtomap">← Înapoi la hartă</button></div>
+    <div><button class="btn sm" data-act="home">← Înapoi la panou</button></div>
     <!-- js/minigame.js mounts the game into this element -->
     <div class="mg-stage" id="minigameRoot">
       <div class="mg-empty">

@@ -84,6 +84,14 @@ Each place's `photo` field in `data/game-data.json` can be:
 
 The team's own photos live in `assets/photos/<place-id>.jpg` (max 1280 px, JPEG). Leave the field empty and the stop shows "Încă nu avem o fotografie" with a link to search for one. Don't hotlink photos from Google Images: they are copyrighted. Use Commons, your own photos, or ones you have permission for.
 
+## Leaderboard and first blood
+
+After signing in, players land on a dashboard with two choices: **Explorează orașul** (the GPS map) and **Minijoc**. The header has **Clasament** (leaderboard).
+
+Scoring: each place counts with the player's best score there (1 point per correct answer). If the player's **first** attempt at a place had every answer right, that place is a **first blood** and counts double. The leaderboard shows rank, player, first bloods and score; it is sorted by score, with a "First blood" toggle that sorts by first bloods instead.
+
+**One-time setup:** run `database/leaderboard.sql` in Supabase → SQL Editor. It creates the `place_results` table (players can only read their own rows), `record_place_result()` (called after every finished quiz; the first call for a place decides first blood) and `get_leaderboard()` (names and totals only, no e-mails). Until it is run, the leaderboard screen says it isn't set up yet and the rest of the app works normally. Results from before the setup are not counted.
+
 ## Accounts (Supabase)
 
 Sign-in uses Supabase email + password accounts (project `scplcjroxictdslyrfez`).
@@ -92,7 +100,8 @@ Sign-in uses Supabase email + password accounts (project `scplcjroxictdslyrfez`)
 database/supabase.js    Supabase client (project URL + publishable key)
 database/auth.js        sign up / in / out, password reset, auth events
 database/profiles.js    the signed-in user's row in `profiles`
-database/scores.js      save_place_score RPC and the `place_scores` table
+database/scores.js      save_place_score / place_scores, plus record_place_result and get_leaderboard
+database/leaderboard.sql  one-time SQL for the leaderboard (run in Supabase)
 js/backend.js           loads database/ lazily so the app still opens if Supabase is unreachable
 js/auth.js              account layer for the UI: validation + Romanian error messages
 ```

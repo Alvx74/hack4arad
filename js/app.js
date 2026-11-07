@@ -10,6 +10,7 @@ import { findPhoto, searchPhotosUrl, fileToDataUrl } from './photos.js';
 import { TrailMap } from './map.js';
 import { mountMinigame, unmountMinigame } from './minigame.js';
 import { confetti } from './confetti.js';
+import { loadLeaderboard, renderLeaderboard, setSort, myStanding } from './leaderboard.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -60,15 +61,18 @@ const routeTargetId = () => (S.revisitId && isDone(S.revisitId)) ? S.revisitId :
 const saveProg = () => S.store && S.store.saveProgress(S.prog);
 
 /* ===================== SCREENS / ACCOUNT ===================== */
-let screen = 'loading';
+let screen = 'loading', prevScreen = 'dashboard';
+const SCREENS = ['loading', 'welcome', 'dashboard', 'leaderboard', 'routeSelect', 'app', 'minigame', 'fatal'];
+const SIGNED_IN_SCREENS = ['dashboard', 'leaderboard', 'routeSelect', 'app', 'minigame'];
 function showScreen(name) {
   if (screen === 'minigame' && name !== 'minigame') unmountMinigame();
+  if (name !== screen && SIGNED_IN_SCREENS.includes(screen) && screen !== 'leaderboard') prevScreen = screen;
   screen = name;
-  ['loading', 'welcome', 'routeSelect', 'app', 'minigame', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
-  $('#hdrRight').hidden = !['app', 'minigame', 'routeSelect'].includes(name);
+  SCREENS.forEach(s => { $('#' + s).hidden = s !== name; });
+  $('#hdrRight').hidden = !SIGNED_IN_SCREENS.includes(name);
   document.body.dataset.screen = name;
   setPanel('');
-  $('#minigameBtn').classList.toggle('active', name === 'minigame');
+  $('#leaderboardBtn').classList.toggle('active', name === 'leaderboard');
   closeMenu();
   window.scrollTo(0, 0);
 }
@@ -222,9 +226,58 @@ function enterApp(user) {
   S.quizzes = {}; S.revisitId = null; S.sheetId = null;
   $('#userName').textContent = user.name;
   S.selectedRouteId = null;
-  const saved = S.store.getRoute();
-  if (saved && S.routes.some(r => r.id === saved)) startSelectedRoute(saved);
+  showDashboard();
+}
+
+/* ===================== DASHBOARD ===================== */
+// First screen after signing in: the GPS map or the minigame, plus the player's standing.
+function savedRoute() {
+  const id = S.store && S.store.getRoute();
+  return S.routes.find(r => r.id === id) || null;
+}
+
+function showDashboard() {
+  $('#dashHello').textContent = 'Salut, ' + S.user.name + '!';
+  const route = S.routes.find(r => r.id === S.selectedRouteId) || savedRoute();
+  const left = route ? route.locationIds.filter(id => !isDone(id)).length : 0;
+  $('#dashMapGo').textContent = !route ? 'Alege un traseu →'
+    : left ? 'Continuă ' + route.name + ' →' : 'Alege un traseu nou →';
+  showScreen('dashboard');
+  refreshDashboardStats();
+}
+
+async function refreshDashboardStats() {
+  const set = (score, fb, rank) => { $('#dashScore').textContent = score; $('#dashFB').textContent = fb; $('#dashRank').textContent = rank; };
+  try {
+    const me = myStanding(await loadLeaderboard());
+    set(me ? me.score : 0, me ? me.fb : 0, me ? me.rank : '–');
+  } catch { set('–', '–', '–'); }
+}
+
+// "Explorează orașul": back to the map if a route is running, else the saved route, else the picker.
+function openMap() {
+  if (S.selectedRouteId && map) { showScreen('app'); map.refresh(); return; }
+  const route = savedRoute();
+  if (route) startSelectedRoute(route.id);
   else { renderRouteChoices(); showScreen('routeSelect'); }
+}
+
+/* ===================== LEADERBOARD ===================== */
+async function showLeaderboard() {
+  closeSheet();
+  showScreen('leaderboard');
+  const body = $('#lbBody');
+  body.innerHTML = '<p class="muted lb-loading">Se încarcă clasamentul…</p>';
+  try { await loadLeaderboard(); renderLeaderboard(body); }
+  catch (e) { body.innerHTML = `<div class="lb-empty"><strong>${esc(e.message)}</strong></div>`; }
+}
+
+function sortLeaderboard(by) {
+  const key = setSort(by);
+  document.querySelectorAll('[data-act="lbsort"]').forEach(b => {
+    const on = b.dataset.sort === key; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+  });
+  if (!$('#lbBody .lb-empty, #lbBody .lb-loading')) renderLeaderboard($('#lbBody'));
 }
 
 function startSelectedRoute(routeId) {
@@ -784,7 +837,8 @@ function renderQuiz() {
   if (q.done) {
     const msg = q.score === n ? 'Scor perfect!' : q.score >= Math.ceil(n / 2) ? 'Bravo!' : 'Uită-te în jur și mai încearcă.';
     const after = q.unlocked ? afterCompletion(p) : '';
-    box.innerHTML = `<h3>Gata!</h3><p class="score">${q.score}/${n}</p><p>${msg}</p>${bestTxt}${after}<button class="btn" data-act="again">Joacă din nou</button>`;
+    const fb = q.firstBlood ? '<div class="fb-badge"><b>First blood!</b> Totul corect din prima: puncte duble pentru acest loc.</div>' : '';
+    box.innerHTML = `<h3>Gata!</h3><p class="score">${q.score}/${n}</p><p>${msg}</p>${fb}${bestTxt}${after}<button class="btn" data-act="again">Joacă din nou</button>`;
     return;
   }
   const t = p.trivia[q.i];
@@ -807,6 +861,17 @@ function afterCompletion(p) {
     <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
 }
 
+// Sends a finished quiz to the leaderboard. The server decides whether it was
+// the player's first attempt here; a perfect first attempt is a first blood.
+function recordAttempt(p, q, n) {
+  S.store.recordResult(p.id, q.score, n).then(res => {
+    if (!res || !res.first_attempt || !res.first_blood) return;
+    q.firstBlood = true;
+    toast('First blood la ' + p.name + '! Puncte duble.');
+    if (S.sheetId === p.id && S.quizzes[p.id] === q) renderQuiz();
+  });
+}
+
 function quizAct(act, el) {
   const p = place(S.sheetId); if (!p || S.sheetMode !== 'full') return;
   const n = p.trivia.length;
@@ -825,6 +890,7 @@ function quizAct(act, el) {
     if (q.i < n - 1) { q.i++; q.chosen = null; }
     else {
       q.done = true;
+      recordAttempt(p, q, n);
       const best = S.store.getBest(p.id);
       if (best === undefined || q.score > best) {
         S.store.setBest(p.id, q.score);
@@ -885,8 +951,17 @@ function bindEvents() {
       case 'panel': setPanel(document.body.classList.contains('panel-' + el.dataset.panel) ? '' : el.dataset.panel); break;
       case 'toggleroute': $('#routeCard').classList.toggle('open'); break;
       case 'chooseRoute': startSelectedRoute(el.dataset.route); break;
+      case 'home': closeSheet(); showDashboard(); break;
+      case 'openmap': openMap(); break;
+      case 'leaderboard': showLeaderboard(); break;
+      case 'lbsort': sortLeaderboard(el.dataset.sort); break;
+      case 'lbrefresh': showLeaderboard(); break;
+      case 'back':
+        if (prevScreen === 'app' && map) { showScreen('app'); map.refresh(); }
+        else if (prevScreen === 'dashboard' || !SIGNED_IN_SCREENS.includes(prevScreen)) showDashboard();
+        else showScreen(prevScreen);
+        break;
       case 'minigame':
-        if (screen === 'minigame') { showScreen('app'); map && map.refresh(); break; }
         closeSheet(); showScreen('minigame');
         mountMinigame($('#minigameRoot'), { user: S.user, places: S.places, completed: [...S.prog.completed] });
         break;

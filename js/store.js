@@ -50,6 +50,13 @@ export function createUserStore(userId) {
       catch (e) { console.warn('[scores] save failed', e); return false; }
     },
 
+    // Every finished quiz goes to the leaderboard table. Returns
+    // { first_attempt, first_blood, best_score } or null if it failed.
+    async recordResult(placeId, score, maxScore) {
+      try { return await (await backend()).recordPlaceResult(placeId, score, maxScore); }
+      catch (e) { console.warn('[scores] record failed', e); return null; }
+    },
+
     getPhoto(placeId) { const v = get('photo:' + placeId); return v && v.startsWith('data:image/') ? v : null; },
     setPhoto(placeId, dataUrl) { return set('photo:' + placeId, dataUrl); },
     removePhoto(placeId) { del('photo:' + placeId); },
