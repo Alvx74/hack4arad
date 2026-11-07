@@ -285,3 +285,18 @@ input[type=range] { width: 100%; accent-color: var(--blue); }
   .brand span { font-size: 1.15rem; }
   .pill { padding: 8px 14px; }
 }
+
+
+/* ===================== ROUTE SELECTION + SIDE QUESTS ===================== */
+.route-select-wrap { max-width: 920px; margin: 0 auto; padding: clamp(42px, 8vw, 84px) 18px; }
+.route-select-wrap h1 { font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.08; margin: 4px 0 10px; }
+.route-select-wrap > .muted { max-width: 650px; }
+.route-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 28px; }
+.route-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 5px 18px rgba(11,15,58,.06); }
+.route-choice h2 { font-size: 1.2rem; }
+.route-choice p { color: var(--muted); flex: 1; }
+.route-choice .btn { width: 100%; }
+.sidequests-section { margin-top: 10px; }
+.sidequests-lead { font-size: .9rem; margin: -4px 0 12px; }
+.pin.side { background: var(--gold); color: var(--ink); }
+.pin.side-off { background: #f7e7a4; color: var(--ink); border-color: #fff; }
