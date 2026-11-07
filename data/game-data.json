@@ -26,7 +26,6 @@
         "biserica-anton",
         "biblioteca-judeteana",
         "teatrul-marionete",
-        "casa-pianului",
         "piata-reconcilierii"
       ]
     },
@@ -66,32 +65,32 @@
             "2",
             "3",
             "4",
-            "5"
+            "6"
           ],
           "a": 2,
-          "e": ""
+          "e": "Răspunsul corect: 4."
         },
         {
           "q": "În ce limbă este scrisul de la intrare?",
           "o": [
-            "Română",
             "Maghiară",
-            "Germană",
-            "Latină"
+            "Latină",
+            "Română",
+            "Germană"
           ],
-          "a": 1,
-          "e": ""
+          "a": 0,
+          "e": "Răspunsul corect: Maghiară."
         },
         {
           "q": "Câte culori principale are biserica?",
           "o": [
-            "2",
+            "1",
             "3",
-            "4",
-            "5"
+            "5",
+            "2"
           ],
           "a": 1,
-          "e": ""
+          "e": "Răspunsul corect: 3."
         }
       ],
       "routeId": "traseu-1",
@@ -115,35 +114,35 @@
         {
           "q": "Cine este arhitectul?",
           "o": [
-            "Ödön Lechner",
-            "Pekkar Francisc",
-            "József Diescher",
-            "Andor Halmay"
+            "Ludovic Szántay",
+            "Ion Mincu",
+            "Francisc Pekár",
+            "Emil Tabakovits"
           ],
-          "a": 1,
-          "e": ""
+          "a": 2,
+          "e": "Răspunsul corect: Francisc Pekár."
         },
         {
           "q": "Câte globuri are fiecare stâlp de iluminare?",
           "o": [
-            "3",
             "4",
-            "5",
-            "6"
+            "3",
+            "1",
+            "5"
           ],
-          "a": 2,
-          "e": ""
+          "a": 3,
+          "e": "Răspunsul corect: 5."
         },
         {
           "q": "Primăria este predominant albă, dar mai are și o altă culoare. Care este aceasta?",
           "o": [
-            "Albastru",
+            "Roșu",
             "Gri",
-            "Galben",
-            "Verde"
+            "Verde",
+            "Galben"
           ],
           "a": 1,
-          "e": ""
+          "e": "Răspunsul corect: Gri."
         }
       ],
       "routeId": "traseu-1",
@@ -167,24 +166,35 @@
         {
           "q": "Care este anul inaugurării?",
           "o": [
-            "1901–1903",
+            "1872–1876",
+            "1923–1925",
             "1911–1913",
-            "1921–1923",
-            "1931–1933"
+            "1958–1960"
           ],
-          "a": 1,
-          "e": ""
+          "a": 2,
+          "e": "Răspunsul corect: 1911–1913."
         },
         {
-          "q": "Câte statui are de la trepte până la intrare?",
+          "q": "Câte statui sunt de la trepte până la intrare?",
           "o": [
-            "0",
             "1",
-            "2",
-            "3"
+            "0",
+            "4",
+            "2"
           ],
-          "a": 1,
-          "e": ""
+          "a": 0,
+          "e": "Răspunsul corect: 1."
+        },
+        {
+          "q": "Care este denumirea alternativă?",
+          "o": [
+            "Palatul Neuman",
+            "Palatul Administrativ",
+            "Palatul Cultural",
+            "Palatul Cenad"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Palatul Cultural."
         }
       ],
       "routeId": "traseu-1",
@@ -206,15 +216,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Care este numărul de intrări pe care scrie „Muzeu”?",
+          "q": "Câte intrări au scris „Muzeu” pe ele?",
           "o": [
-            "1",
             "2",
+            "4",
             "3",
-            "4"
+            "1"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: 2."
+        },
+        {
+          "q": "În general, câți porumbei sunt la intrare?",
+          "o": [
+            "Exact 10",
+            "Cel puțin 1",
+            "Niciunul",
+            "Peste 100"
           ],
           "a": 1,
-          "e": ""
+          "e": "Răspunsul corect: Cel puțin 1."
+        },
+        {
+          "q": "Ce se află în secțiunea de la intrare?",
+          "o": [
+            "Bibliotecă",
+            "Garderobă",
+            "Magazin de suveniruri",
+            "Cafenea"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Magazin de suveniruri."
         }
       ],
       "routeId": "traseu-1",
@@ -236,15 +268,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Care este numărul de stâlpi de iluminare din fața cazinoului?",
+          "q": "Câți stâlpi de iluminare sunt în fața cazinoului?",
           "o": [
-            "4",
-            "5",
             "6",
-            "7"
+            "2",
+            "4",
+            "8"
           ],
-          "a": 2,
-          "e": ""
+          "a": 0,
+          "e": "Răspunsul corect: 6."
+        },
+        {
+          "q": "Ce eveniment școlar important se ține aici? (întreabă un localnic)",
+          "o": [
+            "Banchetul",
+            "Bacalaureatul",
+            "Serbarea de Crăciun",
+            "Olimpiada de matematică"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Banchetul."
+        },
+        {
+          "q": "Cu ce este înconjurat Vechiul Cazinou?",
+          "o": [
+            "Zid de cărămidă",
+            "Gard viu",
+            "Gard de fier",
+            "Un șanț cu apă"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: Gard viu."
         }
       ],
       "routeId": "traseu-1",
@@ -266,15 +320,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Care este anul inaugurării?",
+          "q": "Care este perioada construcției clădirii?",
           "o": [
+            "1919–1921",
             "1869–1873",
-            "1877–1881",
-            "1890–1894",
-            "1901–1905"
+            "1707–1710",
+            "1965–1968"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: 1869–1873."
+        },
+        {
+          "q": "Ce se află vizavi de școală?",
+          "o": [
+            "O biserică",
+            "Un mall",
+            "Gara",
+            "Un teren de sport"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Un teren de sport."
+        },
+        {
+          "q": "Care este fostul nume al instituției, la fel ca al terenului?",
+          "o": [
+            "Ioan Slavici",
+            "Mihai Eminescu",
+            "Avram Iancu",
+            "Aurel Vlaicu"
           ],
           "a": 0,
-          "e": ""
+          "e": "Răspunsul corect: Ioan Slavici."
         }
       ],
       "routeId": "traseu-1",
@@ -296,11 +372,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Ștrandul Neptun — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Câte tobogane are?",
+          "o": [
+            "2",
+            "10",
+            "5, plus unul închis",
+            "3"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: 5, plus unul închis."
+        },
+        {
+          "q": "Cum se numește Neptun în mitologia greacă?",
+          "o": [
+            "Apollo",
+            "Hermes",
+            "Poseidon",
+            "Zeus"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Poseidon."
+        },
+        {
+          "q": "Pentru ce grupă de vârstă este cel mai potrivit ștrandul?",
+          "o": [
+            "Copii",
+            "Adolescenți",
+            "Vârstnici",
+            "Adulți"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Copii."
         }
       ],
       "routeId": "traseu-1",
@@ -322,11 +424,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Piața Avram Iancu — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Ce statuie se află în mijlocul pieței?",
+          "o": [
+            "Statuia Libertății",
+            "Statuia lui Avram Iancu",
+            "Statuia Soldatului Român",
+            "Statuia lui Mihai Viteazu"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Statuia Soldatului Român."
+        },
+        {
+          "q": "Care este cel mai apropiat punct de interes?",
+          "o": [
+            "Mall-ul",
+            "Gara",
+            "Catedrala",
+            "Teatrul"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Teatrul."
+        },
+        {
+          "q": "Ce culori au casele din împrejurimi?",
+          "o": [
+            "Toate albe",
+            "Toate roșii",
+            "Multicolore",
+            "Toate gri"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Multicolore."
         }
       ],
       "routeId": "traseu-2",
@@ -348,11 +476,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Muzeul de Istorie a Calculatoarelor Arad — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Se vede muzeul din drum?",
+          "o": [
+            "Doar noaptea",
+            "Da, foarte clar",
+            "Deloc",
+            "Oarecum"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Oarecum."
+        },
+        {
+          "q": "Ce culoare are clădirea?",
+          "o": [
+            "Roșu",
+            "Albastru",
+            "Galben",
+            "Verde"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: Albastru."
+        },
+        {
+          "q": "Se poate vizita muzeul fără programare?",
+          "o": [
+            "Nu",
+            "Doar dimineața",
+            "Doar în weekend",
+            "Da, oricând"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Nu."
         }
       ],
       "routeId": "traseu-2",
@@ -376,13 +530,35 @@
         {
           "q": "Câte felinare sunt în fața teatrului?",
           "o": [
-            "5",
-            "6",
+            "4",
+            "10",
             "7",
-            "8"
+            "2"
           ],
           "a": 2,
-          "e": ""
+          "e": "Răspunsul corect: 7."
+        },
+        {
+          "q": "În câte săli se pot desfășura spectacole?",
+          "o": [
+            "3",
+            "1",
+            "2",
+            "5"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: 2."
+        },
+        {
+          "q": "De unde se pot cumpăra bilete?",
+          "o": [
+            "De la gară",
+            "De la primărie",
+            "De la bibliotecă",
+            "De la intrare"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: De la intrare."
         }
       ],
       "routeId": "traseu-2",
@@ -404,15 +580,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Care sunt culorile statuii de la intrare?",
+          "q": "Ce culori are statuia de la intrare?",
           "o": [
-            "Roz și Albastru",
-            "Alb și Auriu",
-            "Roșu și Verde",
-            "Negru și Alb"
+            "Verde și roșu",
+            "Negru și gri",
+            "Alb și auriu",
+            "Roz și albastru"
           ],
-          "a": 0,
-          "e": ""
+          "a": 3,
+          "e": "Răspunsul corect: Roz și albastru."
+        },
+        {
+          "q": "Cărei comunități îi este adresată în principal biserica?",
+          "o": [
+            "Sârbilor",
+            "Maghiarilor",
+            "Germanilor",
+            "Românilor"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: Maghiarilor."
+        },
+        {
+          "q": "Care mijloc de transport public oprește cel mai aproape?",
+          "o": [
+            "Troleibuzul",
+            "Metroul",
+            "Tramvaiul",
+            "Trenul"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Tramvaiul."
         }
       ],
       "routeId": "traseu-2",
@@ -434,11 +632,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Biblioteca Județeană — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "La ce etaj este secțiunea pentru copii?",
+          "o": [
+            "Parter",
+            "Subsol",
+            "Etajul 1",
+            "Etajul 2"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Etajul 1."
+        },
+        {
+          "q": "Ce club a fost inaugurat cel mai recent în clădire?",
+          "o": [
+            "Clubul de robotică",
+            "3D Printing și Modeling",
+            "Clubul de șah",
+            "Clubul de lectură"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: 3D Printing și Modeling."
+        },
+        {
+          "q": "Cât costă accesul la bibliotecă pe an?",
+          "o": [
+            "0 lei (gratuit)",
+            "50 lei",
+            "20 lei",
+            "100 lei"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: 0 lei (gratuit)."
         }
       ],
       "routeId": "traseu-2",
@@ -460,11 +684,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Teatrul de Marionete — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Pe unde intră actorii?",
+          "o": [
+            "Prin lateral",
+            "Pe intrarea principală",
+            "Prin spate",
+            "Prin subsol"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Prin lateral."
+        },
+        {
+          "q": "Pentru ce a fost fondat inițial?",
+          "o": [
+            "Școală de dans",
+            "Cinematograf",
+            "Sală de concerte",
+            "Teatru cu marionete"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Teatru cu marionete."
+        },
+        {
+          "q": "Care este primul lucru pe care îl vezi la intrare?",
+          "o": [
+            "O fântână",
+            "O oglindă",
+            "O statuie",
+            "Un tablou"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: O oglindă."
         }
       ],
       "routeId": "traseu-2",
@@ -493,7 +743,7 @@
           "placeholder": true
         }
       ],
-      "routeId": "traseu-2",
+      "routeId": "",
       "sidequestCategory": ""
     },
     {
@@ -514,24 +764,35 @@
         {
           "q": "Câte lumini sunt în jurul statuii celor 13 generali?",
           "o": [
+            "8",
             "13",
-            "15",
-            "17",
-            "19"
+            "20",
+            "17"
           ],
-          "a": 2,
-          "e": ""
+          "a": 3,
+          "e": "Răspunsul corect: 17."
         },
         {
-          "q": "Care parte din statuia Arcului de Triumf este aurită?",
+          "q": "Ce parte a statuii de la Arcul de Triumf este aurită?",
           "o": [
-            "Scutul",
+            "Coroana",
+            "Sabia",
             "Degetele",
-            "Baza",
-            "Coroana"
+            "Aripile"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Degetele."
+        },
+        {
+          "q": "Cartierul cărei comunități se află în zonă?",
+          "o": [
+            "Germanilor",
+            "Maghiarilor",
+            "Slovacilor",
+            "Sârbilor"
           ],
           "a": 1,
-          "e": ""
+          "e": "Răspunsul corect: Maghiarilor."
         }
       ],
       "routeId": "traseu-2",
@@ -553,11 +814,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Catedrala Sfânta Treime — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Pe ce loc este ca importanță în municipiul Arad?",
+          "o": [
+            "Al treilea",
+            "Al cincilea",
+            "Primul",
+            "Al doilea"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Primul."
+        },
+        {
+          "q": "În ce zonă a orașului se află?",
+          "o": [
+            "Aradul Nou",
+            "Micălaca",
+            "Gai",
+            "Podgoria"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Podgoria."
+        },
+        {
+          "q": "Cărei religii îi aparține?",
+          "o": [
+            "Creștin-ortodoxă",
+            "Evanghelică",
+            "Greco-catolică",
+            "Romano-catolică"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Creștin-ortodoxă."
         }
       ],
       "routeId": "traseu-3",
@@ -579,11 +866,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Lacul Pădurice — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Ce animal predomină în zona lacului?",
+          "o": [
+            "Rața",
+            "Porumbelul",
+            "Veverița",
+            "Lebăda"
+          ],
+          "a": 1,
+          "e": "Răspunsul corect: Porumbelul."
+        },
+        {
+          "q": "Ce se întâmplă seara la lac?",
+          "o": [
+            "Se aprind luminile",
+            "Pornește fântâna arteziană",
+            "Are loc un concert",
+            "Se închide parcul"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Se aprind luminile."
+        },
+        {
+          "q": "Ce obiect predomină în jurul lacului?",
+          "o": [
+            "Băncile",
+            "Felinarele",
+            "Statuile",
+            "Coșurile de gunoi"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Băncile."
         }
       ],
       "routeId": "traseu-3",
@@ -605,11 +918,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Gara CFR — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Ce se află în fața gării?",
+          "o": [
+            "Un tren vechi",
+            "O fântână",
+            "O statuie",
+            "Un ceas mare"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Un tren vechi."
+        },
+        {
+          "q": "Ce fel de automate sunt în interiorul clădirii?",
+          "o": [
+            "De jucării",
+            "De bilete de avion",
+            "De cărți",
+            "De flori"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: De cărți."
+        },
+        {
+          "q": "Cât de des vin trenurile?",
+          "o": [
+            "Săptămânal",
+            "Lunar",
+            "Doar în weekend",
+            "Zilnic"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Zilnic."
         }
       ],
       "routeId": "traseu-3",
@@ -631,11 +970,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Atrium Mall — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Până la ce oră este deschis?",
+          "o": [
+            "22:00",
+            "24:00",
+            "20:00",
+            "18:00"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: 22:00."
+        },
+        {
+          "q": "Ce firmă ocupă cel mai mult spațiu la ultimul etaj?",
+          "o": [
+            "Decathlon",
+            "H&M",
+            "Cinema City",
+            "Carrefour"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Cinema City."
+        },
+        {
+          "q": "Câte niveluri are parcarea?",
+          "o": [
+            "6",
+            "1",
+            "2",
+            "4"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: 4."
         }
       ],
       "routeId": "traseu-3",
@@ -657,11 +1022,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre AFI Arad — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Ce magazin sportiv se află în complex?",
+          "o": [
+            "Sportisimo",
+            "Hervis",
+            "Decathlon",
+            "Intersport"
+          ],
+          "a": 2,
+          "e": "Răspunsul corect: Decathlon."
+        },
+        {
+          "q": "Ce magazine se găsesc și aici, și în Atrium Mall?",
+          "o": [
+            "IKEA și Dedeman",
+            "Altex și Flanco",
+            "Lidl și Kaufland",
+            "Cărturești și Mesopotamia"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Cărturești și Mesopotamia."
+        },
+        {
+          "q": "Ce ansamblu rezidențial închis se află în apropiere?",
+          "o": [
+            "ARED City",
+            "Micălaca",
+            "Aradul Nou",
+            "Grădiște"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: ARED City."
         }
       ],
       "routeId": "traseu-3",
@@ -683,11 +1074,37 @@
       "text": [],
       "trivia": [
         {
-          "q": "Întrebare provizorie despre Stadionul UTA — completează aici întrebarea finală.",
-          "o": [],
-          "a": -1,
-          "e": "Întrebarea și variantele de răspuns trebuie completate de echipa proiectului.",
-          "placeholder": true
+          "q": "Ce echipă joacă acasă pe acest teren?",
+          "o": [
+            "UTA Arad",
+            "CFR Cluj",
+            "Poli Timișoara",
+            "Gloria Arad"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: UTA Arad."
+        },
+        {
+          "q": "Ce magazin se află în clădire?",
+          "o": [
+            "Supermarket",
+            "Farmacie",
+            "Librărie",
+            "Magazin de suveniruri"
+          ],
+          "a": 3,
+          "e": "Răspunsul corect: Magazin de suveniruri."
+        },
+        {
+          "q": "Ce statuie se află vizavi de stadion?",
+          "o": [
+            "Statuia fotbalistului",
+            "Statuia Libertății",
+            "Statuia unui cal",
+            "Statuia lui Aurel Vlaicu"
+          ],
+          "a": 0,
+          "e": "Răspunsul corect: Statuia fotbalistului."
         }
       ],
       "routeId": "traseu-3",
