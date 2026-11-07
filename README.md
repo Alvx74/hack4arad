@@ -29,55 +29,36 @@ js/routing.js           walking directions (OSRM)
 js/minigame.js          minigame placeholder (mountMinigame / unmountMinigame)
 js/photos.js            photo lookup (own photo → CSV photo → Wikipedia placeholder)
 js/geo.js               distance and formatting helpers
-data/path.csv           trail order
-data/locations/<id>.csv one file per location
-data/trivia/<id>.csv    one file per location's trivia questions
+data/game-data.json     three selectable routes, 31 locations, trivia and 10 side quests
 assets/photos/          drop real photos here
 vendor/leaflet/         map library (BSD-2 licence)
 ```
 
-## Adding a location
+## Game data
 
-1. Copy `data/locations/_template.csv` to `data/locations/<id>.csv` and fill it in. The `id` inside the file should match the file name.
-2. Copy `data/trivia/_template.csv` to `data/trivia/<id>.csv` and write the questions.
-3. Add a row to `data/path.csv` with its position in the trail. Reordering the trail is just changing the `order` numbers.
+The current game catalogue lives in `data/game-data.json`.
 
-Edit the CSVs in any spreadsheet app (save as CSV, UTF-8) or a text editor.
+- `routes` defines the three route choices shown after sign-in. Each route has an ordered `locationIds` list.
+- `places` contains the location details and trivia. Every route stop has at least one question entry.
+- Questions marked `placeholder: true` are intentionally unfinished. The game shows the placeholder and offers a temporary continue action so testing the route is not blocked.
+- `sidequests` contains the independent side-quest location IDs and categories. Side quests appear separately and unlock when the player's GPS position enters the interaction radius. Completing one does not advance the main route.
+- Each place needs a unique `id`, a display name, and decimal-degree `lat` / `lon` coordinates.
 
-### Location columns
+**Coordinate note:** some newly added locations currently have provisional coordinates or addresses and should be checked on-site before the game is published. The catalogue includes a `coordinate_note` field to flag this.
 
-| column | meaning |
-|---|---|
-| `id` | short unique name, also the file name (`cityhall`) |
-| `name` | full name shown once discovered |
-| `short_name` | label next to the map pin |
-| `category` | free-form grouping, e.g. `heritage`, `landmark`, `food` |
-| `kind` | subtitle shown in the app, e.g. `Landmark · Civic building` |
-| `address` | street address |
-| `lat`, `lon` | coordinates in decimal degrees |
-| `hint` | clue shown while the stop is still a shadow |
-| `photo` | path or URL of a real photo, e.g. `assets/photos/cityhall.jpg`. Leave empty to use the Wikipedia placeholder |
-| `photo_credit` | caption / credit for that photo |
-| `wikipedia` | `lang:Article_Title` used for the placeholder photo, e.g. `en:Arad_Administrative_Palace` |
-| `description` | the commentary. Put an empty line between paragraphs (keep the whole field in double quotes) |
-
-### Trivia columns
-
-`question, option_a, option_b, option_c, option_d, correct, explanation`. `correct` is the letter of the right option (`A`–`D`). Leave `option_c`/`option_d` empty for fewer answers. Any number of rows per location.
-
-A location with no trivia file completes as soon as it's discovered.
+To add a question, add an object to that place's `trivia` array with `q`, `o` (answer options), `a` (zero-based correct option index), and optional `e` (explanation). Replace a placeholder object once the question is ready.
 
 ## Trail rules
 
-- Directions always point at the first unfinished stop on the path (stop 1 for a new user).
-- A stop is discovered when you're within the interaction radius (300 m by default, see `js/config.js`).
+- After sign-in, the player chooses one of the three routes. Directions point at the first unfinished stop on that selected route.
+- A main-route stop is discovered when you're within the interaction radius (300 m by default, see `js/config.js`). Side quests are checked independently against the same radius and can be discovered at any time.
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
 - Walking directions start from wherever you are: a dotted line leads to the nearest street, then the solid line follows streets. The route is planned once and followed; it is only re-planned when you stray from it (35–90 m depending on GPS accuracy).
 - Finished stops can be revisited from the list; "Înapoi la traseu" returns to the current stop.
 
 ## Developer tools
 
-At the bottom of the app page there is a collapsed **ADVANCED** tab with testing tools: the interaction radius slider and a simulated position (tap the map or jump straight to a stop). It is intentionally in English; everything else visitors see is Romanian.
+At the bottom of the app page there is a collapsed **ADVANCED** tab with testing tools: the interaction radius slider and a simulated position (tap the map or jump straight to a route stop or side quest). It is intentionally in English; everything else visitors see is Romanian.
 
 ## Design
 
