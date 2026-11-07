@@ -138,26 +138,25 @@
       <ul class="places" id="placeList"></ul>
     </section>
 
-    <!-- Developer tools: only rendered with ?dev=1 (see js/config.js) -->
-    <details class="card tools" id="devTools" hidden>
-      <summary>Testing tools (dev)</summary>
-      <div class="body">
-        <div class="muted" id="gpsSub"></div>
+    <!-- Developer tools (English on purpose), collapsed at the bottom of the page -->
+    <details class="advanced" id="devTools">
+      <summary>ADVANCED</summary>
+      <div class="adv-body">
         <div>
           <label for="radius"><strong>Interaction radius</strong></label>
           <div class="sliderrow">
-            <input type="range" id="radius" min="50" max="3000" step="50" value="500">
-            <span class="val" id="radiusVal">500 m</span>
+            <input type="range" id="radius" min="50" max="3000" step="50" value="300">
+            <span class="val" id="radiusVal">300 m</span>
             <button class="btn sm" data-act="rreset">Reset</button>
           </div>
+          <div class="note">Default 300 m. A stop is revealed and unlocked at or below this distance.</div>
         </div>
         <div>
           <label class="row"><input type="checkbox" id="sim"> <strong>Simulate my position</strong></label>
-          <div class="note">Tap the map to place yourself, or jump to a stop:</div>
+          <div class="note">When on, real GPS is ignored. Tap the map to place yourself, or jump to a stop:</div>
           <div class="row" style="margin-top:8px" id="tpBtns"></div>
+          <div class="note" id="gpsSub"></div>
         </div>
-        <label class="row"><input type="checkbox" id="showRoute" checked> Show route</label>
-        <label class="row"><input type="checkbox" id="allShadows"> Show upcoming stops as shadows</label>
       </div>
     </details>
   </div>

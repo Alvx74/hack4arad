@@ -69,13 +69,13 @@ A location with no trivia file completes as soon as it's discovered.
 ## Trail rules
 
 - Directions always point at the first unfinished stop on the path (stop 1 for a new user).
-- A stop is discovered when you're within the interaction radius (500 m by default, see `js/config.js`).
+- A stop is discovered when you're within the interaction radius (300 m by default, see `js/config.js`).
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
 - Finished stops can be revisited from the list; "Înapoi la traseu" returns to the current stop.
 
 ## Developer tools
 
-Visitors don't see any testing controls. Open the site with `?dev=1` (e.g. `http://localhost:8000/?dev=1`) to show the dev panel under the stop list: interaction radius, simulated position (tap the map or jump to a stop), route toggle and upcoming-stop shadows. It stays on for the browser tab; `?dev=0` turns it off. The dev panel is intentionally in English; everything visitors see is Romanian.
+At the bottom of the app page there is a collapsed **ADVANCED** tab with testing tools: the interaction radius slider and a simulated position (tap the map or jump straight to a stop). It is intentionally in English; everything else visitors see is Romanian.
 
 ## Design
 

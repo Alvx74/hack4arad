@@ -16,7 +16,7 @@ export const DATA = {
 };
 
 // A stop is revealed and unlocked at or below this distance (metres).
-export const DEFAULT_RADIUS = 500;
+export const DEFAULT_RADIUS = 300;
 // Below this distance the route panel says "You're here".
 export const ARRIVED_METERS = 25;
 // Map centre before any position is known.
@@ -54,11 +54,3 @@ export const MAP_COLORS = {
   user: '#d4141c',
 };
 
-// Developer tools are shown only when the page is opened with ?dev=1.
-export const DEV_MODE = (() => {
-  try {
-    const q = new URLSearchParams(location.search);
-    if (q.has('dev')) sessionStorage.setItem('arad-explorer:dev', q.get('dev') === '0' ? '0' : '1');
-    return sessionStorage.getItem('arad-explorer:dev') === '1';
-  } catch { return false; }
-})();

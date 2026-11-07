@@ -1,6 +1,6 @@
 // Main controller: front page, trail state, GPS, route panel, stop sheet and trivia.
 // All visitor-facing text is Romanian; the dev panel (?dev=1) stays in English.
-import { DEFAULT_RADIUS, ARRIVED_METERS, DEV_MODE } from './config.js';
+import { DEFAULT_RADIUS, ARRIVED_METERS } from './config.js';
 import { loadTrail } from './data.js';
 import { auth, validateUsername } from './auth.js';
 import { createUserStore } from './store.js';
@@ -193,7 +193,7 @@ function completeStop(id) {
   if (next) {
     toast('Oprirea ' + stopNo(id) + ' e gata. Drumul spre oprirea ' + stopNo(next) + ' e pe hartă.');
     S.fitOnRoute = true;
-  } else toast('Ai terminat traseul! 🎉');
+  } else toast('Ai terminat traseul. Felicitări!');
 }
 
 /* ===================== ROUTING ===================== */
@@ -207,7 +207,7 @@ function clearRoute(why) {
 
 function maybeReroute() {
   const id = routeTargetId();
-  if (!$('#showRoute').checked || !S.pos || !id) { if (routeState.status !== 'idle') clearRoute(); return; }
+  if (!S.pos || !id) { if (routeState.status !== 'idle') clearRoute(); return; }
   const p = place(id);
   if (haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) < ARRIVED_METERS) { if (routeState.status !== 'arrived') clearRoute('arrived'); return; }
   const changed = routeState.targetId !== id || routeState.status === 'arrived' || routeState.status === 'idle';
@@ -236,7 +236,6 @@ function renderRoute() {
   $('#followBtn').hidden = !(S.revisitId && isDone(S.revisitId));
   const msg = t => { empty.hidden = false; body.hidden = true; empty.textContent = t; setLine([]); };
   if (!id) return msg('Ai parcurs tot traseul. Poți reveni la orice oprire din lista de mai jos.');
-  if (!$('#showRoute').checked) return msg('Traseul este ascuns.');
   if (!S.pos) return msg('Așteptăm locația ta ca să-ți arătăm drumul…');
 
   const p = place(id), d = haversine(S.pos.lat, S.pos.lon, p.lat, p.lon);
@@ -276,7 +275,7 @@ function renderProgress() {
   $('#progDots').innerHTML = S.path.map((id, i) =>
     `<span class="pdot ${isDisc(id) && isDone(id) ? 'done' : i === a ? 'cur' : ''}"></span>`).join('');
   let t;
-  if (a >= n) t = 'Ai vizitat toate opririle. Felicitări! 🎉';
+  if (a >= n) t = 'Ai vizitat toate opririle. Felicitări!';
   else {
     const p = place(S.path[a]);
     t = isDisc(p.id)
@@ -295,10 +294,8 @@ function renderStatus() {
     dot.className = 'dot err'; t.textContent = 'Fără locație'; btn.hidden = false;
     help.hidden = false; help.textContent = S.gpsErr;
   } else { dot.className = 'dot wait'; t.textContent = 'Se caută locația…'; }
-  if (DEV_MODE) {
-    $('#gpsSub').textContent = (S.pos ? S.pos.lat.toFixed(5) + ', ' + S.pos.lon.toFixed(5) : 'no position')
-      + (S.lastGps && S.lastGps.acc ? ' · ±' + Math.round(S.lastGps.acc) + ' m' : '');
-  }
+  $('#gpsSub').textContent = 'Position: ' + (S.pos ? S.pos.lat.toFixed(5) + ', ' + S.pos.lon.toFixed(5) : 'none')
+    + (S.lastGps && S.lastGps.acc && !S.sim ? ' · GPS ±' + Math.round(S.lastGps.acc) + ' m' : '');
 }
 
 // Navigation control for a stop: the current stop is always the target,
@@ -448,7 +445,7 @@ function renderQuiz() {
     if (q.unlocked && next) {
       after = `<div class="next">Urmează oprirea ${stopNo(next)}: ${esc(displayName(place(next)))}. Drumul s-a actualizat pe hartă.</div>
         <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
-    } else if (q.unlocked) after = '<div class="next">Ai terminat tot traseul. 🎉</div>';
+    } else if (q.unlocked) after = '<div class="next">Ai terminat tot traseul. Felicitări!</div>';
     box.innerHTML = `<h3>Gata!</h3><p class="score">${q.score}/${n}</p><p>${msg}</p>${bestTxt}${after}<button class="btn" data-act="again">Joacă din nou</button>`;
     return;
   }
@@ -551,8 +548,6 @@ function bindEvents() {
     const id = e.target.id;
     if (id === 'photoIn') handlePhotoFile(e.target.files && e.target.files[0]);
     else if (id === 'sim') setSim(e.target.checked);
-    else if (id === 'showRoute') { if (!e.target.checked) clearRoute(); updateAll(); }
-    else if (id === 'allShadows') { S.showAllShadows = e.target.checked; listSig = ''; updateAll(); }
   });
   $('#radius').addEventListener('input', e => {
     S.radius = parseInt(e.target.value, 10); $('#radiusVal').textContent = S.radius + ' m'; updateAll();
@@ -566,7 +561,6 @@ function bindEvents() {
 /* ===================== BOOT ===================== */
 async function boot() {
   bindEvents();
-  $('#devTools').hidden = !DEV_MODE;
   showScreen('loading');
   try {
     const trail = await loadTrail();
