@@ -438,7 +438,7 @@ function fitRoute() {
 // On phones the progress chip and the directions card cover the top and
 // bottom of the map, so fitting leaves room for them.
 function mapPadding() {
-  if (!isMobile()) return undefined;
+  if (!isMobile()) return { top: 110, right: 70, bottom: 70, left: 30 };  // progress chip floats over the map top
   const card = $('#routeCard').getBoundingClientRect(), box = $('.mapbox').getBoundingClientRect();
   return { top: 120, right: 64, bottom: Math.max(60, box.bottom - card.top + 16), left: 24 };
 }

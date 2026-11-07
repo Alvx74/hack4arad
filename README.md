@@ -78,9 +78,14 @@ To add a question, add an object to that place's `trivia` array with `q`, `o` (a
 
 At the bottom of the app page there is a collapsed **ADVANCED** tab with testing tools: the interaction radius slider and a simulated position (tap the map or jump straight to a route stop or side quest). It is intentionally in English; everything else visitors see is Romanian.
 
-## Phone layout
+## Layout (mobile first)
 
-On phones (≤ 760 px wide, or portrait up to 1024 px) the map fills the screen under the header. Progress is a chip at the top, the next-stop card floats above a bottom bar (tap its handle for all directions), and the bottom bar opens pop-up panels: **Opriri**, **Misiuni** (with a badge when a side quest is nearby) and **Avansat** (the dev tools). The breakpoint is defined twice and must match: the phone section of `css/styles.css` and `MOBILE_MQ` in `js/app.js`.
+`css/styles.css` is written for phones first; one block at the end (**DESKTOP**) extends it for wide screens.
+
+- **Phone** (≤ 760 px wide, or portrait up to 1024 px): the map fills the screen under the header. Progress is a chip at the top, the next-stop card floats above a bottom bar (tap its handle for all directions), and the bottom bar opens pop-up panels: **Opriri**, **Misiuni** (with a badge when a side quest is nearby) and **Avansat** (the dev tools).
+- **Desktop**: the same full-screen map, and the three pop-up panels plus the next-stop card become a fixed sidebar on the right, so the bottom bar disappears.
+
+The breakpoint is defined twice and must match: the DESKTOP query in `css/styles.css` is the exact opposite of `MOBILE_MQ` in `js/app.js`.
 
 ## Dark mode
 
@@ -88,7 +93,7 @@ The moon/sun button in the header switches themes; the choice is saved in the br
 
 ## Design
 
-Simple and square: Roboto everywhere (18 px base), large bold titles, 2 px edges and hard offset shadows that press down when clicked. Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`), also shown as the four-colour stripe under the header; they are variables at the top of `css/styles.css` (map colours in `js/config.js`).
+Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), large bold titles, rounded-square buttons and no shadows. Every edge is a 2 px border in the colour opposite to its fill: light surfaces get a dark border, coloured fills get a white border with a ring in their own colour, and dark mode flips them. Surfaces over the map and the login sky are see-through (blurred), with an opaque fallback for browsers without blur. Neutral buttons swap to the opposite colours on hover. Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`), also shown as the four-colour stripe under the header; they are variables at the top of `css/styles.css` (map colours in `js/config.js`).
 
 - `js/sky.js`: the login background, drifting "constellations" that react to the mouse or finger (one still frame if the device asks for reduced motion).
 - `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
