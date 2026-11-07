@@ -33,9 +33,9 @@ export const TILES = {
 
 // Walking route services, tried in order. {c} = "lon,lat;lon,lat".
 export const ROUTERS = [
-  { url: 'https://routing.openstreetmap.de/routed-foot/route/v1/foot/{c}', label: 'Walking route' },
-  { url: 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/{c}', label: 'Walking route' },
-  { url: 'https://router.project-osrm.org/route/v1/foot/{c}', label: 'Street route (road network, approximate for walking)' },
+  { url: 'https://routing.openstreetmap.de/routed-foot/route/v1/foot/{c}', label: 'Traseu pietonal' },
+  { url: 'https://routing.openstreetmap.de/routed-foot/route/v1/driving/{c}', label: 'Traseu pietonal' },
+  { url: 'https://router.project-osrm.org/route/v1/foot/{c}', label: 'Traseu pe străzi (aproximativ pentru mers pe jos)' },
 ];
 export const ROUTE_QUERY = '?overview=full&geometries=geojson&steps=true';
 export const ROUTE_TIMEOUT_MS = 9000;
@@ -45,3 +45,20 @@ export const ROUTE_TIMEOUT_MS = 9000;
 export const WIKI_SUMMARY = (lang, title) =>
   `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
 export const WIKI_IMAGE_WIDTH = 960;
+
+// Map colours, taken from the Arad coat of arms (keep in sync with css/styles.css).
+export const MAP_COLORS = {
+  route: '#2b38b8',
+  ring: '#2b38b8',
+  accuracy: '#2b38b8',
+  user: '#d4141c',
+};
+
+// Developer tools are shown only when the page is opened with ?dev=1.
+export const DEV_MODE = (() => {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.has('dev')) sessionStorage.setItem('arad-explorer:dev', q.get('dev') === '0' ? '0' : '1');
+    return sessionStorage.getItem('arad-explorer:dev') === '1';
+  } catch { return false; }
+})();

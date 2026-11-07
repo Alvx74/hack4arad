@@ -1,6 +1,6 @@
 // Leaflet map wrapper. Leaflet itself is loaded as a global (window.L)
 // from vendor/leaflet by index.html.
-import { START, TILES } from './config.js';
+import { START, TILES, MAP_COLORS as C } from './config.js';
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -14,10 +14,10 @@ export class TrailMap {
     L.tileLayer(TILES.url, TILES.options).addTo(this.map).on('tileerror', () => {
       if (!warned) { warned = true; onTileError && onTileError(); }
     });
-    this.routeLine = L.polyline([], { color: '#0f766e', weight: 6, opacity: 0.9 }).addTo(this.map);
-    this.acc = L.circle(START, { radius: 0, stroke: false, fillColor: '#2563eb', fillOpacity: 0.14, interactive: false });
-    this.ring = L.circle(START, { radius: 500, color: '#0f766e', weight: 2, dashArray: '6 6', fillColor: '#0f766e', fillOpacity: 0.06, interactive: false });
-    this.dot = L.circleMarker(START, { radius: 8, color: '#ffffff', weight: 3, fillColor: '#2563eb', fillOpacity: 1, interactive: false });
+    this.routeLine = L.polyline([], { color: C.route, weight: 6, opacity: 0.85 }).addTo(this.map);
+    this.acc = L.circle(START, { radius: 0, stroke: false, fillColor: C.accuracy, fillOpacity: 0.12, interactive: false });
+    this.ring = L.circle(START, { radius: 500, color: C.ring, weight: 2, dashArray: '6 6', fillColor: C.ring, fillOpacity: 0.05, interactive: false });
+    this.dot = L.circleMarker(START, { radius: 8, color: '#ffffff', weight: 3, fillColor: C.user, fillOpacity: 1, interactive: false });
     this.onMarkerClick = onMarkerClick;
     this.map.on('click', e => onMapClick && onMapClick({ lat: e.latlng.lat, lon: e.latlng.lng }));
     if (window.ResizeObserver) new ResizeObserver(() => this.map.invalidateSize()).observe(el);

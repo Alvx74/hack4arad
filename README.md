@@ -19,7 +19,7 @@ GitHub Pages works too. GPS needs HTTPS (or `localhost`) on phones.
 index.html              page structure only (front page + app)
 css/styles.css          all styling, theme colours at the top
 js/config.js            settings: radius, map tiles, routing servers, data paths
-js/app.js               main controller: screens, trail logic, sheet, trivia
+js/app.js               main controller: screens, trail logic, sheet, trivia (Romanian UI text lives here and in index.html)
 js/auth.js              username sign-in (swap for real accounts here)
 js/store.js             per-user saved progress, scores and photos
 js/data.js              loads and validates the CSV database
@@ -71,7 +71,15 @@ A location with no trivia file completes as soon as it's discovered.
 - Directions always point at the first unfinished stop on the path (stop 1 for a new user).
 - A stop is discovered when you're within the interaction radius (500 m by default, see `js/config.js`).
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
-- Finished stops can be revisited from the list; "Back to the trail" returns to the current stop.
+- Finished stops can be revisited from the list; "Înapoi la traseu" returns to the current stop.
+
+## Developer tools
+
+Visitors don't see any testing controls. Open the site with `?dev=1` (e.g. `http://localhost:8000/?dev=1`) to show the dev panel under the stop list: interaction radius, simulated position (tap the map or jump to a stop), route toggle and upcoming-stop shadows. It stays on for the browser tab; `?dev=0` turns it off. The dev panel is intentionally in English; everything visitors see is Romanian.
+
+## Design
+
+Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`): blue, red, gold and oak-leaf green, defined as variables at the top of `css/styles.css` (map colours in `js/config.js`). Change them there for aesthetic tweaks.
 
 ## Photos
 

@@ -22,9 +22,9 @@ const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 
 export function validateUsername(raw) {
   const name = String(raw || '').trim().replace(/\s+/g, ' ');
-  if (name.length < 2) return { error: 'Use at least 2 characters.' };
-  if (name.length > 24) return { error: 'Use at most 24 characters.' };
-  if (!/^[\p{L}\p{N} _.-]+$/u.test(name)) return { error: 'Letters, numbers, spaces, dots, dashes and underscores only.' };
+  if (name.length < 2) return { error: 'Folosește cel puțin 2 caractere.' };
+  if (name.length > 24) return { error: 'Folosește cel mult 24 de caractere.' };
+  if (!/^[\p{L}\p{N} _.-]+$/u.test(name)) return { error: 'Doar litere, cifre, spații, puncte, cratime și underscore.' };
   return { name, id: name.toLowerCase() };
 }
 

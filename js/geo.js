@@ -9,9 +9,9 @@ export function haversine(lat1, lon1, lat2, lon2) {
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
-const CARDINALS = ['north', 'north-northeast', 'northeast', 'east-northeast', 'east', 'east-southeast', 'southeast', 'south-southeast',
-  'south', 'south-southwest', 'southwest', 'west-southwest', 'west', 'west-northwest', 'northwest', 'north-northwest'];
+const CARDINALS = ['nord', 'nord-nord-est', 'nord-est', 'est-nord-est', 'est', 'est-sud-est', 'sud-est', 'sud-sud-est',
+  'sud', 'sud-sud-vest', 'sud-vest', 'vest-sud-vest', 'vest', 'vest-nord-vest', 'nord-vest', 'nord-nord-vest'];
 export const cardinal = bearing => CARDINALS[Math.round(bearing / 22.5) % 16];
 
 export const fmtDist = m => m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(2) + ' km';
-export const fmtDur = s => { const m = Math.round(s / 60); return m < 1 ? 'under 1 min' : m + ' min'; };
+export const fmtDur = s => { const m = Math.round(s / 60); return m < 1 ? 'sub 1 min' : m + ' min'; };

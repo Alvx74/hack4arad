@@ -19,7 +19,7 @@ async function wikiPhotos(spec) {
       if (!res.ok) return [];
       const j = await res.json();
       const page = (j.content_urls && j.content_urls.desktop && j.content_urls.desktop.page) || `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title)}`;
-      const credit = { credit: 'Placeholder photo from Wikipedia', link: page };
+      const credit = { credit: 'Fotografie provizorie de pe Wikipedia', link: page };
       const out = [];
       if (j.thumbnail && j.thumbnail.source) {
         out.push({ src: j.thumbnail.source.replace(/\/\d+px-/, `/${WIKI_IMAGE_WIDTH}px-`), ...credit });
@@ -44,9 +44,9 @@ function loads(src) {
 
 // Resolves to { src, credit, link, own } or null.
 export async function findPhoto(place, ownPhoto) {
-  if (ownPhoto) return { src: ownPhoto, credit: 'Your photo', own: true };
+  if (ownPhoto) return { src: ownPhoto, credit: 'Fotografia ta', own: true };
   const candidates = [];
-  if (place.photo) candidates.push({ src: place.photo, credit: place.photoCredit || 'Photo' });
+  if (place.photo) candidates.push({ src: place.photo, credit: place.photoCredit || 'Fotografie' });
   for (const c of candidates) if (await loads(c.src)) return c;
   if (place.wikipedia) {
     for (const c of await wikiPhotos(place.wikipedia)) if (await loads(c.src)) return c;

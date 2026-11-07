@@ -1,5 +1,6 @@
 // Main controller: front page, trail state, GPS, route panel, stop sheet and trivia.
-import { DEFAULT_RADIUS, ARRIVED_METERS } from './config.js';
+// All visitor-facing text is Romanian; the dev panel (?dev=1) stays in English.
+import { DEFAULT_RADIUS, ARRIVED_METERS, DEV_MODE } from './config.js';
 import { loadTrail } from './data.js';
 import { auth, validateUsername } from './auth.js';
 import { createUserStore } from './store.js';
@@ -37,37 +38,33 @@ function activeIndex() {
 const activeId = () => S.path[activeIndex()] || null;
 const isVisible = id => { const i = S.path.indexOf(id); return i >= 0 && (S.showAllShadows || i <= activeIndex()); };
 const stopNo = id => S.path.indexOf(id) + 1;
-const displayName = p => isDisc(p.id) ? p.name : 'Mystery stop ' + stopNo(p.id);
+const displayName = p => isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
 const distTo = p => S.pos ? haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) : null;
 const inRadius = p => { const d = distTo(p); return d !== null && d <= S.radius; };
 // Directions always point at the current stop, unless the user picked a finished stop to revisit.
 const routeTargetId = () => (S.revisitId && isDone(S.revisitId)) ? S.revisitId : activeId();
 const saveProg = () => S.store && S.store.saveProgress(S.prog);
 
-/* ===================== FRONT PAGE ===================== */
+/* ===================== SCREENS / ACCOUNT ===================== */
 function showScreen(name) {
-  $('#loading').hidden = name !== 'loading';
-  $('#welcome').hidden = name !== 'welcome';
-  $('#app').hidden = name !== 'app';
-  $('#fatal').hidden = name !== 'fatal';
+  ['loading', 'welcome', 'app', 'fatal'].forEach(s => { $('#' + s).hidden = s !== name; });
+  $('#account').hidden = name !== 'app';
+  closeMenu();
+  window.scrollTo(0, 0);
 }
 
 function renderWelcome() {
   const known = auth.knownUsers();
   $('#knownWrap').hidden = !known.length;
   $('#knownUsers').innerHTML = known.map(u =>
-    `<button type="button" class="btn" data-act="pickuser" data-name="${esc(u.name)}">${esc(u.name)}</button>`).join('');
+    `<button type="button" data-act="pickuser" data-name="${esc(u.name)}">${esc(u.name)}</button>`).join('');
   $('#stopCount').textContent = S.path.length;
   $('#nameErr').textContent = '';
 }
 
 async function signIn(name) {
-  try {
-    const user = await auth.signIn(name);
-    enterApp(user);
-  } catch (e) {
-    $('#nameErr').textContent = e.message;
-  }
+  try { enterApp(await auth.signIn(name)); }
+  catch (e) { $('#nameErr').textContent = e.message; $('#username').focus(); }
 }
 
 async function signOut() {
@@ -75,9 +72,15 @@ async function signOut() {
   stopGPS();
   await auth.signOut();
   S.user = null; S.store = null;
-  renderWelcome(); showScreen('welcome');
   $('#username').value = '';
+  renderWelcome(); showScreen('welcome');
 }
+
+function toggleMenu(force) {
+  const m = $('#accountMenu'), open = force !== undefined ? force : m.hidden;
+  m.hidden = !open; $('#accountBtn').setAttribute('aria-expanded', String(open));
+}
+const closeMenu = () => toggleMenu(false);
 
 function enterApp(user) {
   S.user = user;
@@ -99,13 +102,13 @@ function enterApp(user) {
 function initMap() {
   if (!window.L) {
     $('#mapMsg').hidden = false;
-    $('#mapMsg').textContent = 'The map library could not be loaded. Reload the page.';
+    $('#mapMsg').textContent = 'Harta nu a putut fi încărcată. Reîncarcă pagina.';
     return;
   }
   map = new TrailMap($('#map'), {
     onMapClick: ll => { if (S.sim) { S.simPos = ll; setSim(true); } },
     onMarkerClick: id => openSheet(id),
-    onTileError: () => { $('#mapMsg').hidden = false; $('#mapMsg').textContent = 'Some map tiles failed to load. Check your connection.'; },
+    onTileError: () => { $('#mapMsg').hidden = false; $('#mapMsg').textContent = 'O parte din hartă nu s-a încărcat. Verifică conexiunea la internet.'; },
   });
 }
 
@@ -113,7 +116,7 @@ function syncMap() {
   if (!map) return;
   map.setStops(S.path.filter(isVisible).map(id => {
     const p = place(id);
-    if (!isDisc(id)) return { id, lat: p.lat, lon: p.lon, kind: 'shadow', no: stopNo(id), label: '', title: 'Undiscovered location' };
+    if (!isDisc(id)) return { id, lat: p.lat, lon: p.lon, kind: 'shadow', no: stopNo(id), label: '', title: 'Loc nedescoperit' };
     return { id, lat: p.lat, lon: p.lon, kind: inRadius(p) ? 'on' : 'off', no: stopNo(id), label: p.short, title: p.name };
   }));
   map.setUser(S.pos, S.radius);
@@ -136,12 +139,12 @@ function fitRoute() {
 
 /* ===================== GPS ===================== */
 function startGPS() {
-  if (!('geolocation' in navigator)) { S.gpsErr = 'This browser has no GPS support. Use the simulator under Testing tools.'; updateAll(); return; }
+  if (!('geolocation' in navigator)) { S.gpsErr = 'Browserul tău nu oferă acces la locație.'; updateAll(); return; }
   stopGPS();
   S.gpsErr = null;
   try {
     S.watchId = navigator.geolocation.watchPosition(onGPS, onGPSErr, { enableHighAccuracy: true, maximumAge: 2000, timeout: 30000 });
-  } catch { S.gpsErr = 'Could not start GPS here. Use the simulator under Testing tools.'; }
+  } catch { S.gpsErr = 'Locația nu a putut fi pornită în acest browser.'; }
   updateAll();
 }
 function stopGPS() {
@@ -155,8 +158,9 @@ function onGPS(p) {
   updateAll();
 }
 function onGPSErr(err) {
-  S.gpsErr = err.code === 1 ? 'Location permission denied. Allow location access for this page, or use the simulator.'
-    : err.code === 2 ? 'Position unavailable. Retrying…' : 'GPS timed out. Still trying…';
+  S.gpsErr = err.code === 1
+    ? 'Accesul la locație este blocat. Permite-l din setările browserului pentru această pagină, apoi apasă „Activează”.'
+    : err.code === 2 ? 'Locația nu este disponibilă momentan. Încercăm din nou…' : 'Semnalul GPS întârzie. Încercăm în continuare…';
   updateAll();
 }
 function setSim(on) {
@@ -174,7 +178,7 @@ function checkDiscovery() {
   const p = place(id);
   if (!inRadius(p)) return;
   S.prog.discovered.push(id); saveProg();
-  toast('Discovered: ' + p.name + '!');
+  toast('Ai descoperit: ' + p.name + '!');
   // A stop without trivia has nothing to answer, so it counts as done right away.
   if (!p.trivia.length) completeStop(id);
 }
@@ -187,9 +191,9 @@ function completeStop(id) {
   clearRoute();
   const next = activeId();
   if (next) {
-    toast('Stop ' + stopNo(id) + ' complete. Directions to stop ' + stopNo(next) + ' are on the map.');
+    toast('Oprirea ' + stopNo(id) + ' e gata. Drumul spre oprirea ' + stopNo(next) + ' e pe hartă.');
     S.fitOnRoute = true;
-  } else toast('Trail complete! 🎉');
+  } else toast('Ai terminat traseul! 🎉');
 }
 
 /* ===================== ROUTING ===================== */
@@ -231,36 +235,36 @@ function renderRoute() {
   const setLine = pts => map && map.setRoute(pts);
   $('#followBtn').hidden = !(S.revisitId && isDone(S.revisitId));
   const msg = t => { empty.hidden = false; body.hidden = true; empty.textContent = t; setLine([]); };
-  if (!id) return msg('The trail is complete. Pick a finished stop in the list to walk back to it.');
-  if (!$('#showRoute').checked) return msg('Route hidden.');
-  if (!S.pos) return msg('Waiting for your location to plan a route…');
+  if (!id) return msg('Ai parcurs tot traseul. Poți reveni la orice oprire din lista de mai jos.');
+  if (!$('#showRoute').checked) return msg('Traseul este ascuns.');
+  if (!S.pos) return msg('Așteptăm locația ta ca să-ți arătăm drumul…');
 
   const p = place(id), d = haversine(S.pos.lat, S.pos.lon, p.lat, p.lon);
   empty.hidden = true; body.hidden = false;
-  $('#rTitle').textContent = (id === S.revisitId ? 'Revisiting ' : 'Stop ' + stopNo(id) + ': ') + displayName(p);
+  $('#rTitle').textContent = (id === S.revisitId ? 'Revii la ' : stopNo(id) + '. ') + displayName(p);
   if (routeState.status === 'arrived' || d < ARRIVED_METERS) {
-    $('#rSummary').textContent = 'You’re here';
-    $('#rNext').textContent = isDisc(id) ? 'Open the stop to read about it and answer the trivia.' : 'Keep going: you should be inside the radius any moment.';
+    $('#rSummary').textContent = 'Ai ajuns';
+    $('#rNext').textContent = isDisc(id) ? 'Deschide oprirea din listă ca să citești povestea și să răspunzi la întrebări.' : 'Mai fă câțiva pași: locul se dezvăluie imediat.';
     $('#rNote').textContent = ''; $('#rSteps').innerHTML = ''; setLine([]); return;
   }
   const r = routeState.data;
   if (routeState.status === 'ok' && r && routeState.targetId === id) {
     setLine(r.coords);
-    $('#rSummary').textContent = fmtDist(r.dist) + ' · ' + fmtDur(r.dur);
+    $('#rSummary').textContent = fmtDist(r.dist) + ' · ' + fmtDur(r.dur) + ' pe jos';
     const ci = currentStep(r.steps, S.pos), nxt = ci >= 0 ? r.steps[Math.min(ci + 1, r.steps.length - 1)] : null;
-    $('#rNext').textContent = nxt ? (ci + 1 < r.steps.length ? 'Next: ' : 'Then: ') + stepText(nxt) : 'Follow the highlighted route.';
-    $('#rNote').textContent = r.label + ' along streets. It updates if you leave the path.';
+    $('#rNext').textContent = nxt ? (ci + 1 < r.steps.length ? 'Urmează: ' : 'Apoi: ') + stepText(nxt) : 'Urmează linia albastră de pe hartă.';
+    $('#rNote').textContent = r.label + '. Se actualizează dacă te abați de la drum.';
     $('#rSteps').innerHTML = r.steps.map((s, i) => `<li class="${i === ci ? 'cur' : ''}">${esc(stepText(s))}${s.distance ? ' · ' + fmtDist(s.distance) : ''}</li>`).join('');
   } else if (routeState.status === 'loading') {
     setLine([[S.pos.lat, S.pos.lon], [p.lat, p.lon]]);
-    $('#rSummary').textContent = 'Finding a route…';
-    $('#rNext').textContent = 'Straight-line distance: ' + fmtDist(d);
+    $('#rSummary').textContent = fmtDist(d);
+    $('#rNext').textContent = 'Căutăm cel mai bun drum…';
     $('#rNote').textContent = ''; $('#rSteps').innerHTML = '';
   } else {
     setLine([[S.pos.lat, S.pos.lon], [p.lat, p.lon]]);
-    $('#rSummary').textContent = fmtDist(d) + ' straight line';
-    $('#rNext').textContent = 'Street directions are unavailable right now.';
-    $('#rNote').textContent = 'The routing service could not be reached, so a straight line is shown. It will retry automatically.';
+    $('#rSummary').textContent = fmtDist(d) + ' în linie dreaptă';
+    $('#rNext').textContent = 'Indicațiile pe străzi nu sunt disponibile acum. Mergi în direcția liniei de pe hartă.';
+    $('#rNote').textContent = 'Serviciul de rute nu răspunde; reîncercăm automat.';
     $('#rSteps').innerHTML = '';
   }
 }
@@ -268,40 +272,44 @@ function renderRoute() {
 /* ===================== PROGRESS / STATUS / LIST ===================== */
 function renderProgress() {
   const a = activeIndex(), n = S.path.length;
-  $('#progTitle').textContent = a >= n ? 'Trail complete' : 'Stop ' + (a + 1) + ' of ' + n;
+  $('#progTitle').textContent = a >= n ? 'Traseu complet' : 'Oprirea ' + (a + 1) + ' din ' + n;
   $('#progDots').innerHTML = S.path.map((id, i) =>
     `<span class="pdot ${isDisc(id) && isDone(id) ? 'done' : i === a ? 'cur' : ''}"></span>`).join('');
   let t;
-  if (a >= n) t = 'You visited every stop on the trail. 🎉';
+  if (a >= n) t = 'Ai vizitat toate opririle. Felicitări! 🎉';
   else {
     const p = place(S.path[a]);
     t = isDisc(p.id)
-      ? 'Answer the trivia at ' + p.name + (a + 1 < n ? ' to unlock the next stop.' : ' to complete the trail.')
-      : 'Follow the route to the shadow and get within ' + S.radius + ' m to reveal it.';
+      ? 'Răspunde la întrebările de la ' + p.name + (a + 1 < n ? ' ca să deblochezi oprirea următoare.' : ' ca să termini traseul.')
+      : 'Urmează drumul de pe hartă. Locul se dezvăluie când ajungi la ' + S.radius + ' m de el.';
   }
   $('#progText').textContent = t;
 }
 
 function renderStatus() {
-  const dot = $('#gpsDot'), t = $('#gpsTitle'), s = $('#gpsSub');
-  if (S.sim) { dot.className = 'dot wait'; t.textContent = 'Simulated position (test mode)'; }
-  else if (S.lastGps) { dot.className = 'dot ok'; t.textContent = 'GPS live' + (S.lastGps.acc ? ' · accuracy ±' + Math.round(S.lastGps.acc) + ' m' : ''); }
-  else if (S.gpsErr) { dot.className = 'dot err'; t.textContent = 'No GPS fix'; }
-  else { dot.className = 'dot wait'; t.textContent = 'Waiting for GPS…'; }
-  let sub = S.pos ? S.pos.lat.toFixed(5) + ', ' + S.pos.lon.toFixed(5) : '';
-  if (S.gpsErr && !S.sim) sub = S.gpsErr + (sub ? ' · ' + sub : '');
-  s.textContent = sub;
+  const dot = $('#gpsDot'), t = $('#gpsTitle'), help = $('#gpsHelp'), btn = $('#gpsBtn');
+  btn.hidden = true; help.hidden = true;
+  if (S.sim) { dot.className = 'dot wait'; t.textContent = 'Poziție simulată'; }
+  else if (S.lastGps) { dot.className = 'dot ok'; t.textContent = 'Locație activă'; }
+  else if (S.gpsErr) {
+    dot.className = 'dot err'; t.textContent = 'Fără locație'; btn.hidden = false;
+    help.hidden = false; help.textContent = S.gpsErr;
+  } else { dot.className = 'dot wait'; t.textContent = 'Se caută locația…'; }
+  if (DEV_MODE) {
+    $('#gpsSub').textContent = (S.pos ? S.pos.lat.toFixed(5) + ', ' + S.pos.lon.toFixed(5) : 'no position')
+      + (S.lastGps && S.lastGps.acc ? ' · ±' + Math.round(S.lastGps.acc) + ' m' : '');
+  }
 }
 
 // Navigation control for a stop: the current stop is always the target,
 // finished stops can be revisited, future stops can't be navigated to.
 function navControl(id, inSheet) {
   if (id === routeTargetId() && !isDone(id)) {
-    return `<button class="btn ${inSheet ? 'primary' : ''}" data-act="showroute">Show route</button>`;
+    return `<button class="btn ${inSheet ? 'primary' : ''}" data-act="showroute">Arată drumul</button>`;
   }
   if (!isDone(id)) return '';
-  if (S.revisitId === id) return `<button class="btn" data-act="follow">Back to the trail</button>`;
-  return `<button class="btn" data-act="revisit" data-id="${id}">Navigate here</button>`;
+  if (S.revisitId === id) return `<button class="btn" data-act="follow">Înapoi la traseu</button>`;
+  return `<button class="btn" data-act="revisit" data-id="${id}">Du-mă aici</button>`;
 }
 
 let listSig = '';
@@ -311,13 +319,13 @@ function renderList() {
   if (sig !== listSig) {
     listSig = sig;
     $('#placeList').innerHTML = ids.map(id => {
-      const p = place(id), disc = isDisc(id);
-      const tag = isDone(id) ? '<span class="tag done">Done</span>' : id === act ? '<span class="tag cur">Current</span>' : '<span class="tag">Locked</span>';
-      return `<li class="place ${disc ? '' : 'shadow'}" id="pl-${id}">
-        <div class="num">${disc ? stopNo(id) : '?'}</div>
-        <div class="pinfo"><strong>${esc(displayName(p))}</strong> ${tag}<div class="muted">${disc ? esc(p.kind) : 'Undiscovered'}</div><div class="status" id="st-${id}"></div></div>
+      const p = place(id), disc = isDisc(id), done = isDone(id);
+      const tag = done ? '<span class="tag done">Vizitat</span>' : id === act ? '<span class="tag cur">Acum</span>' : '<span class="tag">Blocat</span>';
+      return `<li class="place ${disc ? '' : 'shadow'} ${done ? 'done' : ''}" id="pl-${id}">
+        <div class="num">${disc ? (done ? '✓' : stopNo(id)) : '?'}</div>
+        <div class="pinfo"><strong>${esc(displayName(p))}</strong>${tag}<div class="sub2">${disc ? esc(p.kind) : esc(p.hint)}</div><div class="status" id="st-${id}"></div></div>
         <div class="pbtns">
-          <button class="btn primary" data-act="open" data-id="${id}" id="op-${id}">${disc ? 'Open' : 'Inspect'}</button>
+          <button class="btn primary" data-act="open" data-id="${id}" id="op-${id}">${disc ? 'Deschide' : 'Indiciu'}</button>
           ${navControl(id, false)}
         </div></li>`;
     }).join('');
@@ -326,9 +334,9 @@ function renderList() {
     const p = place(id), d = distTo(p), disc = isDisc(id), inr = d !== null && d <= S.radius;
     const li = document.getElementById('pl-' + id); if (!li) return;
     li.classList.toggle('on', disc && inr);
-    document.getElementById('st-' + id).textContent = d === null ? 'Waiting for your location…'
-      : disc ? (inr ? 'In range · ' + fmtDist(d) + ' away' : 'Locked · ' + fmtDist(d) + ' away (need ≤ ' + S.radius + ' m)')
-        : fmtDist(d) + ' away · get within ' + S.radius + ' m to reveal';
+    document.getElementById('st-' + id).textContent = d === null ? ''
+      : disc ? (inr ? (d < ARRIVED_METERS ? 'Ești aici' : 'Se poate deschide · la ' + fmtDist(d)) : 'La ' + fmtDist(d) + ' · se deschide de aproape')
+        : 'La ' + fmtDist(d) + ' de tine';
     const op = document.getElementById('op-' + id); if (op) op.disabled = disc ? !inr : false;
   });
 }
@@ -353,22 +361,23 @@ function closeSheet() {
 function renderSheet() {
   const p = place(S.sheetId); if (!p) { closeSheet(); return; }
   const mode = modeFor(p); S.sheetMode = mode;
-  const nav = navControl(p.id, true);
-  const close = '<button class="btn" data-act="close" aria-label="Close">✕</button>';
+  const nav = `<div class="sheet-nav" id="sheetNav">${navControl(p.id, true)}</div>`;
+  const close = '<button class="x" data-act="close" aria-label="Închide">✕</button>';
   let h;
   if (mode === 'shadow') {
-    h = `<div class="sheet-head"><div><div class="kicker">Undiscovered</div><h2>Mystery stop ${stopNo(p.id)}</h2><div class="muted">${esc(p.hint)}</div></div>${close}</div>
-      <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Hidden</span></div>
-      <div class="lockmsg"><strong>Get closer to reveal it.</strong><p>Walk to within ${S.radius} m of the shadow to discover what it is.</p></div><div class="sheet-nav" id="sheetNav">${nav}</div>`;
+    h = `<div class="sheet-head"><div><p class="kicker">Nedescoperit</p><h2>Oprirea misterioasă ${stopNo(p.id)}</h2></div>${close}</div>
+      <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Ascuns</span></div>
+      <div class="lockmsg"><strong>Indiciu</strong><p>${esc(p.hint)}</p></div>
+      <p class="muted">Apropie-te la ${S.radius} m de umbra de pe hartă ca să afli ce este.</p>${nav}`;
   } else {
-    h = `<div class="sheet-head"><div><div class="kicker">${esc(p.kind)}</div><h2>${esc(p.name)}</h2><div class="muted">${esc(p.address)}</div></div>${close}</div>
-      <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip ${mode === 'full' ? 'ok' : 'lock'}">${mode === 'full' ? 'Unlocked' : 'Locked'}</span>${p.category ? `<span class="chip">${esc(p.category)}</span>` : ''}</div>`;
+    h = `<div class="sheet-head"><div><p class="kicker">${esc(p.kind)}</p><h2>${esc(p.name)}</h2><p class="muted" style="margin:4px 0 0">${esc(p.address)}</p></div>${close}</div>
+      <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip ${mode === 'full' ? 'ok' : 'lock'}">${mode === 'full' ? 'Deblocat' : 'Blocat'}</span></div>`;
     if (mode === 'locked') {
-      h += `<div class="lockmsg"><strong>Out of range.</strong><p>Photos, commentary and trivia are only available within ${S.radius} m of this place.</p></div><div class="sheet-nav" id="sheetNav">${nav}</div>`;
+      h += `<div class="lockmsg"><strong>Ești prea departe.</strong><p>Fotografiile, povestea și întrebările se deschid când ești la cel mult ${S.radius} m de acest loc.</p></div>${nav}`;
     } else {
-      h += `<figure class="photo" id="photoBox"><div class="photo-loading">Loading photo…</div></figure><div class="pcap" id="photoCap"></div>`
+      h += `<figure class="photo" id="photoBox"><div class="photo-loading">Se încarcă fotografia…</div></figure><div class="pcap" id="photoCap"></div>`
         + p.text.map(t => `<p>${esc(t)}</p>`).join('')
-        + `<div class="quiz" id="quiz"></div><div class="sheet-nav" id="sheetNav">${nav}</div>`;
+        + `<div class="quiz" id="quiz"></div>${nav}`;
     }
   }
   $('#sheetBody').innerHTML = h;
@@ -378,14 +387,14 @@ function renderSheet() {
 
 function updateSheetDist() {
   const el = $('#sheetDist'); if (!el || !S.sheetId) return;
-  const d = distTo(place(S.sheetId)); el.textContent = d === null ? 'Distance unknown' : fmtDist(d) + ' away';
+  const d = distTo(place(S.sheetId)); el.textContent = d === null ? 'Distanță necunoscută' : 'La ' + fmtDist(d);
 }
 
 function syncSheet() {
   if (!S.sheetId) return;
   if (!isVisible(S.sheetId)) { closeSheet(); return; }
   const mode = modeFor(place(S.sheetId));
-  if (S.sheetMode === 'full' && mode !== 'full') { closeSheet(); toast('You left the ' + S.radius + ' m zone, so this place is locked again.'); }
+  if (S.sheetMode === 'full' && mode !== 'full') { closeSheet(); toast('Ai ieșit din zona de ' + S.radius + ' m, așa că locul s-a blocat din nou.'); }
   else if (mode !== S.sheetMode) renderSheet();
   else {
     updateSheetDist();
@@ -403,58 +412,55 @@ async function renderPhoto() {
   const ph = await findPhoto(p, own);
   if (my !== photoSeq || S.sheetId !== p.id || S.sheetMode !== 'full') return;
   const box = $('#photoBox'), cap = $('#photoCap'); if (!box) return;
-  if (ph) {
-    box.innerHTML = `<img src="${esc(ph.src)}" alt="Photo of ${esc(p.name)}">`;
-  } else {
-    box.innerHTML = `<div class="photo-empty"><strong>No photo yet</strong>
-      <a href="${esc(searchPhotosUrl(p))}" target="_blank" rel="noopener">Search photos of this place ↗</a></div>`;
-  }
-  const credit = ph ? (ph.link ? `<a href="${esc(ph.link)}" target="_blank" rel="noopener">${esc(ph.credit)}</a>` : esc(ph.credit)) : 'Add your own photo of this place';
+  if (ph) box.innerHTML = `<img src="${esc(ph.src)}" alt="Fotografie: ${esc(p.name)}">`;
+  else box.innerHTML = `<div class="photo-empty"><strong>Încă nu avem o fotografie</strong>
+      <a href="${esc(searchPhotosUrl(p))}" target="_blank" rel="noopener">Caută fotografii cu acest loc ↗</a></div>`;
+  const credit = ph ? (ph.link ? `<a href="${esc(ph.link)}" target="_blank" rel="noopener">${esc(ph.credit)}</a>` : esc(ph.credit)) : 'Poți adăuga propria fotografie';
   cap.innerHTML = `<span>${credit}</span>
-    <span class="row" style="gap:6px"><label class="btn sm">${own ? 'Replace photo' : 'Add photo'}<input type="file" accept="image/*" hidden id="photoIn"></label>${own ? '<button class="btn sm" data-act="rmphoto">Remove</button>' : ''}</span>`;
+    <span class="row" style="gap:6px"><label class="btn sm">${own ? 'Schimbă fotografia' : 'Adaugă fotografia ta'}<input type="file" accept="image/*" hidden id="photoIn"></label>${own ? '<button class="btn sm" data-act="rmphoto">Șterge</button>' : ''}</span>`;
 }
 
 async function handlePhotoFile(file) {
   const p = place(S.sheetId); if (!p || !file) return;
   try {
     const url = await fileToDataUrl(file);
-    if (!S.store.setPhoto(p.id, url)) toast('Browser storage is full, so the photo was not saved.');
+    if (!S.store.setPhoto(p.id, url)) toast('Spațiul browserului e plin, fotografia nu a fost salvată.');
     if (S.sheetId === p.id && S.sheetMode === 'full') renderPhoto();
-  } catch { toast('That file could not be read as an image.'); }
+  } catch { toast('Fișierul nu a putut fi citit ca imagine.'); }
 }
 
 /* ===================== TRIVIA ===================== */
 function renderQuiz() {
   const p = place(S.sheetId), box = $('#quiz'); if (!box) return;
   const q = S.quizzes[p.id], n = p.trivia.length, best = S.store.getBest(p.id);
-  if (!n) { box.innerHTML = '<h3>Trivia</h3><p class="muted">No questions for this stop yet.</p>'; return; }
-  const bestTxt = best !== undefined ? `<div class="muted" style="margin-bottom:8px">Best score here: ${best}/${n}</div>` : '';
+  if (!n) { box.innerHTML = '<h3>Întrebări</h3><p class="muted">Încă nu sunt întrebări pentru acest loc.</p>'; return; }
+  const bestTxt = best !== undefined ? `<p class="muted">Cel mai bun scor aici: ${best}/${n}</p>` : '';
   if (!q) {
-    const lead = isDone(p.id) ? 'You already finished this stop. Play again for a better score.'
-      : `${n} questions about this place. Answer them all to unlock the next stop.`;
-    box.innerHTML = `<h3>Trivia</h3><p class="muted">${lead}</p>${bestTxt}<button class="btn primary" data-act="start">Start trivia</button>`;
+    const lead = isDone(p.id) ? 'Ai terminat deja această oprire. Poți juca din nou pentru un scor mai bun.'
+      : `${n} întrebări despre acest loc. Răspunde la toate ca să deblochezi oprirea următoare.`;
+    box.innerHTML = `<h3>Întrebări</h3><p class="muted">${lead}</p>${bestTxt}<button class="btn primary" data-act="start">Începe</button>`;
     return;
   }
   if (q.done) {
-    const msg = q.score === n ? 'Perfect score!' : q.score >= Math.ceil(n / 2) ? 'Nicely done.' : 'Look around and try again.';
+    const msg = q.score === n ? 'Scor perfect!' : q.score >= Math.ceil(n / 2) ? 'Bravo!' : 'Uită-te în jur și mai încearcă.';
     const next = activeId();
     let after = '';
     if (q.unlocked && next) {
-      after = `<div class="next">Next up: stop ${stopNo(next)}, ${esc(displayName(place(next)))}. Your route has been updated.</div>
-        <button class="btn primary" data-act="showroute">Show me the way</button> `;
-    } else if (q.unlocked) after = '<div class="next">You finished the whole trail. 🎉</div>';
-    box.innerHTML = `<h3>Trivia complete</h3><p class="big">${q.score}/${n}</p><p>${msg}</p>${bestTxt}${after}<button class="btn" data-act="again">Play again</button>`;
+      after = `<div class="next">Urmează oprirea ${stopNo(next)}: ${esc(displayName(place(next)))}. Drumul s-a actualizat pe hartă.</div>
+        <button class="btn primary" data-act="showroute">Arată-mi drumul</button> `;
+    } else if (q.unlocked) after = '<div class="next">Ai terminat tot traseul. 🎉</div>';
+    box.innerHTML = `<h3>Gata!</h3><p class="score">${q.score}/${n}</p><p>${msg}</p>${bestTxt}${after}<button class="btn" data-act="again">Joacă din nou</button>`;
     return;
   }
   const t = p.trivia[q.i];
-  box.innerHTML = `<h3>Trivia · Question ${q.i + 1} of ${n}</h3><p class="qtext">${esc(t.q)}</p>
+  box.innerHTML = `<p class="kicker">Întrebarea ${q.i + 1} din ${n}</p><p class="qtext">${esc(t.q)}</p>
     <div class="opts">${t.o.map((o, i) => {
       let cls = 'opt';
       if (q.chosen !== null) { if (i === t.a) cls += ' right'; else if (i === q.chosen) cls += ' wrong'; }
       return `<button class="${cls}" data-act="opt" data-i="${i}" ${q.chosen !== null ? 'disabled' : ''}>${esc(o)}</button>`;
     }).join('')}</div>`
-    + (q.chosen !== null ? `<p><strong>${q.chosen === t.a ? 'Correct!' : 'Not quite.'}</strong> ${esc(t.e)}</p>
-      <button class="btn primary" data-act="next">${q.i < n - 1 ? 'Next question' : 'See result'}</button>` : '');
+    + (q.chosen !== null ? `<p><strong>${q.chosen === t.a ? 'Corect!' : 'Nu chiar.'}</strong> ${esc(t.e)}</p>
+      <button class="btn primary" data-act="next">${q.i < n - 1 ? 'Următoarea întrebare' : 'Vezi rezultatul'}</button>` : '');
 }
 
 function quizAct(act, el) {
@@ -496,12 +502,13 @@ function updateAll() {
 }
 
 function resetProgress() {
+  if (!window.confirm('Sigur vrei să iei traseul de la capăt? Progresul și scorurile pentru „' + S.user.name + '” vor fi șterse.')) return;
   S.prog = { discovered: [], completed: [] }; saveProg();
   S.store.clearBests(S.path);
   S.quizzes = {}; S.revisitId = null;
   closeSheet(); clearRoute(); listSig = '';
   if (map) map.clearStops();
-  updateAll(); fitTrail(); toast('Progress reset. Heading back to stop 1.');
+  updateAll(); fitTrail(); toast('Ai luat-o de la capăt. Prima oprire te așteaptă.');
 }
 
 /* ===================== EVENTS ===================== */
@@ -514,26 +521,29 @@ function bindEvents() {
 
   document.addEventListener('click', e => {
     if (e.target === $('#sheet')) { closeSheet(); return; }
-    const el = e.target.closest ? e.target.closest('[data-act]') : null; if (!el) return;
+    const el = e.target.closest ? e.target.closest('[data-act]') : null;
+    if (!e.target.closest || !e.target.closest('#account')) closeMenu();
+    if (!el) return;
     const act = el.dataset.act, id = el.dataset.id;
     switch (act) {
+      case 'menu': toggleMenu(); break;
       case 'pickuser': signIn(el.dataset.name); break;
-      case 'signout': signOut(); break;
+      case 'signout': closeMenu(); signOut(); break;
+      case 'resetprog': closeMenu(); resetProgress(); break;
       case 'open': if (isVisible(id)) openSheet(id); break;
       case 'revisit': if (isDone(id)) { S.revisitId = id; S.fitOnRoute = true; listSig = ''; if (S.sheetId) renderSheet(); updateAll(); } break;
       case 'follow': S.revisitId = null; S.fitOnRoute = true; listSig = ''; if (S.sheetId) renderSheet(); updateAll(); break;
-      case 'showroute': closeSheet(); fitRoute(); $('#routeCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); break;
+      case 'showroute': closeSheet(); fitRoute(); $('.mapbox').scrollIntoView({ behavior: 'smooth', block: 'start' }); break;
       case 'close': closeSheet(); break;
       case 'start': case 'again': case 'opt': case 'next': quizAct(act, el); break;
       case 'rmphoto': { const p = place(S.sheetId); if (p) { S.store.removePhoto(p.id); renderPhoto(); } break; }
       case 'tp': { const p = place(id); if (p) { S.simPos = { lat: p.lat, lon: p.lon }; setSim(true); map && map.center(S.pos); } break; }
       case 'rreset': $('#radius').value = DEFAULT_RADIUS; S.radius = DEFAULT_RADIUS; $('#radiusVal').textContent = S.radius + ' m'; updateAll(); break;
-      case 'resetprog': resetProgress(); break;
       case 'enable': startGPS(); break;
       case 'zin': map && map.zoomIn(); break;
       case 'zout': map && map.zoomOut(); break;
       case 'fit': fitTrail(); break;
-      case 'locate': if (S.pos) map && map.center(S.pos); else toast('No position yet.'); break;
+      case 'locate': if (S.pos) map && map.center(S.pos); else toast('Încă nu știm unde ești.'); break;
     }
   });
 
@@ -547,22 +557,26 @@ function bindEvents() {
   $('#radius').addEventListener('input', e => {
     S.radius = parseInt(e.target.value, 10); $('#radiusVal').textContent = S.radius + ' m'; updateAll();
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.sheetId) closeSheet(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (S.sheetId) closeSheet(); else closeMenu();
+  });
 }
 
 /* ===================== BOOT ===================== */
 async function boot() {
   bindEvents();
+  $('#devTools').hidden = !DEV_MODE;
   showScreen('loading');
   try {
     const trail = await loadTrail();
     S.places = trail.places; S.path = trail.path;
     S.byId = new Map(trail.places.map(p => [p.id, p]));
   } catch (e) {
-    const local = location.protocol === 'file:';
-    $('#fatalMsg').textContent = local
-      ? 'The location database can’t be read when the page is opened straight from disk. Start a local web server in the project folder (for example: python3 -m http.server 8000) and open http://localhost:8000.'
-      : 'The location database could not be loaded: ' + e.message;
+    console.error(e);
+    $('#fatalMsg').textContent = location.protocol === 'file:'
+      ? 'Datele traseului nu pot fi citite când pagina e deschisă direct de pe disc. Pornește un server local în folderul proiectului (de exemplu: python3 -m http.server 8000) și deschide http://localhost:8000.'
+      : 'Datele traseului nu au putut fi încărcate. Reîncarcă pagina sau încearcă mai târziu.';
     showScreen('fatal');
     return;
   }

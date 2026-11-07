@@ -24,19 +24,25 @@ export async function fetchRoute(from, to) {
   return null;
 }
 
+const TURNS = {
+  left: 'Virează la stânga', right: 'Virează la dreapta',
+  'slight left': 'Ține ușor stânga', 'slight right': 'Ține ușor dreapta',
+  'sharp left': 'Virează brusc la stânga', 'sharp right': 'Virează brusc la dreapta',
+};
+
 export function stepText(s) {
   const m = s.maneuver || {}, nm = s.name || '';
-  const on = nm ? ' onto ' + nm : '';
+  const on = nm ? ' pe ' + nm : '';
   switch (m.type) {
-    case 'depart': return 'Head ' + cardinal(m.bearing_after || 0) + (nm ? ' on ' + nm : '');
-    case 'arrive': return 'Arrive at your destination';
-    case 'roundabout': case 'rotary': return 'At the roundabout, take exit ' + (m.exit || 1) + on;
-    case 'exit roundabout': case 'exit rotary': return 'Exit the roundabout' + on;
-    case 'new name': return 'Continue' + (nm ? ' on ' + nm : ' straight');
+    case 'depart': return 'Pornește spre ' + cardinal(m.bearing_after || 0) + on;
+    case 'arrive': return 'Ai ajuns la destinație';
+    case 'roundabout': case 'rotary': return 'La sensul giratoriu, ia ieșirea ' + (m.exit || 1) + on;
+    case 'exit roundabout': case 'exit rotary': return 'Ieși din sensul giratoriu' + on;
+    case 'new name': return 'Continuă' + (nm ? on : ' înainte');
   }
-  if (m.modifier === 'uturn') return 'Make a U-turn' + on;
-  if (m.modifier === 'straight' || !m.modifier) return 'Continue' + (nm ? ' on ' + nm : ' straight');
-  return 'Turn ' + m.modifier + on;
+  if (m.modifier === 'uturn') return 'Întoarce-te' + on;
+  if (m.modifier === 'straight' || !m.modifier) return 'Continuă' + (nm ? on : ' înainte');
+  return (TURNS[m.modifier] || 'Virează') + on;
 }
 
 // Index of the step whose geometry is closest to pos, or -1.

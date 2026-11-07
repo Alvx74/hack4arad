@@ -1,4 +1,4 @@
 id,name,short_name,category,kind,address,lat,lon,hint,photo,photo_credit,wikipedia,description
-my-new-place,Full Name Shown After Discovery,Short Label,landmark,Landmark · Something,Street and number,46.17000,21.31000,One-sentence clue shown while the stop is still a shadow.,assets/photos/my-new-place.jpg,Photo: Your Name,en:Wikipedia_Article_Title,"First paragraph of the description.
+locatie-noua,Numele complet afișat după descoperire,Etichetă scurtă,reper,Reper · Ceva,Strada și numărul,46.17000,21.31000,Un indiciu de o propoziție afișat cât timp oprirea e încă o umbră.,assets/photos/locatie-noua.jpg,Foto: Numele tău,en:Wikipedia_Article_Title,"Primul paragraf al descrierii.
 
-Second paragraph. Leave an empty line between paragraphs."
+Al doilea paragraf. Lasă un rând gol între paragrafe."
