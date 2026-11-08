@@ -16,7 +16,7 @@ export const DATA = {
 };
 
 // A stop is revealed and unlocked at or below this distance (metres).
-export const DEFAULT_RADIUS = 120;
+export const DEFAULT_RADIUS = 60;
 // Below this distance the route panel says "You're here".
 export const ARRIVED_METERS = 25;
 // Map centre before any position is known.
