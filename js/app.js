@@ -56,6 +56,8 @@ const onMap = id => isSideQuest(id) || isVisible(id);
 const canOpen = onMap;
 const stopNo = id => S.path.indexOf(id) + 1;
 const displayName = p => isSideQuest(p.id) || isDisc(p.id) ? p.name : 'Oprirea misterioasă ' + stopNo(p.id);
+// Hint for a stop that isn't discovered yet: never names the place.
+const stopHint = () => `Urmează drumul de pe hartă și apropie-te la ${S.radius} m ca să descoperi oprirea.`;
 const distTo = p => S.pos ? haversine(S.pos.lat, S.pos.lon, p.lat, p.lon) : null;
 const inRadius = p => { const d = distTo(p); return d !== null && d <= S.radius; };
 // Directions always point at the current stop, unless the user picked a finished stop to revisit.
@@ -719,7 +721,7 @@ function renderList() {
       const tag = done ? '<span class="tag done">Vizitat</span>' : id === act ? '<span class="tag cur">Acum</span>' : '<span class="tag">Blocat</span>';
       return `<li class="place ${disc ? '' : 'shadow'} ${done ? 'done' : ''}" id="pl-${id}">
         <div class="num">${disc ? (done ? '✓' : stopNo(id)) : '?'}</div>
-        <div class="pinfo"><strong>${esc(displayName(p))}</strong>${tag}<div class="sub2">${disc ? esc(p.kind) : esc(p.hint)}</div><div class="status" id="st-${id}"></div></div>
+        <div class="pinfo"><strong>${esc(displayName(p))}</strong>${tag}<div class="sub2">${disc ? esc(p.kind) : esc(stopHint())}</div><div class="status" id="st-${id}"></div></div>
         <div class="pbtns">
           <button class="btn primary" data-act="open" data-id="${id}" id="op-${id}">${disc ? 'Deschide' : 'Indiciu'}</button>
           ${navControl(id, false)}
@@ -795,7 +797,7 @@ function renderSheet() {
   } else if (mode === 'shadow') {
     h = `<div class="sheet-head"><div><p class="kicker">Nedescoperit</p><h2>Oprirea misterioasă ${stopNo(p.id)}</h2></div>${close}</div>
       <div class="chips"><span class="chip" id="sheetDist"></span><span class="chip lock">Ascuns</span></div>
-      <div class="lockmsg"><strong>Indiciu</strong><p>${esc(p.hint)}</p></div>
+      <div class="lockmsg"><strong>Indiciu</strong><p>${esc(stopHint())}</p></div>
       <p class="muted">Apropie-te la ${S.radius} m de umbra de pe hartă ca să afli ce este.</p>${nav}`;
   } else {
     h = `<div class="sheet-head"><div><p class="kicker">${esc(p.kind)}</p><h2>${esc(p.name)}</h2><p class="muted" style="margin:4px 0 0">${esc(p.address)}</p></div>${close}</div>
@@ -843,9 +845,8 @@ async function renderPhoto() {
   if (ph) box.innerHTML = `<img src="${esc(ph.src)}" alt="Fotografie: ${esc(p.name)}">`;
   else box.innerHTML = `<div class="photo-empty"><strong>Încă nu avem o fotografie</strong>
       <a href="${esc(searchPhotosUrl(p))}" target="_blank" rel="noopener">Caută fotografii cu acest loc ↗</a></div>`;
-  const credit = ph ? (ph.link ? `<a href="${esc(ph.link)}" target="_blank" rel="noopener">${esc(ph.credit)}</a>` : esc(ph.credit)) : 'Poți adăuga propria fotografie';
-  cap.innerHTML = `<span>${credit}</span>
-    <span class="row" style="gap:6px"><label class="btn sm">${own ? 'Schimbă fotografia' : 'Adaugă fotografia ta'}<input type="file" accept="image/*" hidden id="photoIn"></label>${own ? '<button class="btn sm" data-act="rmphoto">Șterge</button>' : ''}</span>`;
+  const credit = ph ? (ph.link ? `<a href="${esc(ph.link)}" target="_blank" rel="noopener">${esc(ph.credit)}</a>` : esc(ph.credit)) : '';
+  cap.innerHTML = `<span>${credit}</span>`;
 }
 
 async function handlePhotoFile(file) {
