@@ -5,7 +5,8 @@
 //
 // Which AI it uses depends on the secret that is set:
 //   GEMINI_API_KEY  Google Gemini, free tier (key from aistudio.google.com/apikey)
-//                   optional GEMINI_MODEL, default gemini-flash-latest
+//                   optional GEMINI_MODEL; by default it tries a fast model first and
+//                   falls back to others when the free tier is busy (503/429)
 //   XAI_API_KEY     Grok (xAI), paid; optional GROK_MODEL, default grok-latest
 // If both are set, Gemini is used.
 //
@@ -16,9 +17,10 @@
 
 // Both speak the same "chat completions" format.
 export function provider(env = k => Deno.env.get(k)) {
-  if (env('GEMINI_API_KEY')) return { name: 'gemini', key: env('GEMINI_API_KEY'), model: env('GEMINI_MODEL') || 'gemini-flash-latest',
+  if (env('GEMINI_API_KEY')) return { name: 'gemini', key: env('GEMINI_API_KEY'),
+    models: env('GEMINI_MODEL') ? [env('GEMINI_MODEL')] : ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-2.5-flash-lite'],
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions' };
-  if (env('XAI_API_KEY')) return { name: 'grok', key: env('XAI_API_KEY'), model: env('GROK_MODEL') || 'grok-latest',
+  if (env('XAI_API_KEY')) return { name: 'grok', key: env('XAI_API_KEY'), models: [env('GROK_MODEL') || 'grok-latest'],
     url: 'https://api.x.ai/v1/chat/completions' };
   return null;
 }
@@ -100,18 +102,23 @@ export async function handle(req, { ai = provider(), fetchFn = fetch } = {}) {
   const messages = c.messages.length ? c.messages
     : [{ role: 'user', content: '(Vizitatorul tocmai a deschis conversația. Salută-l scurt, prezintă-te și propune-i orele la care ești liber.)' }];
 
-  const res = await fetchFn(ai.url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ai.key}` },
-    // generous token limit: some models spend part of it "thinking" before answering
-    body: JSON.stringify({ model: ai.model, temperature: 0.8, max_tokens: 1024,
-      messages: [{ role: 'system', content: systemPrompt(c.p, c.route, c.slots) }, ...messages] }),
-  });
-  if (!res.ok) {
-    const detail = clip(await res.text(), 300);
-    console.error(ai.name, 'error', res.status, detail);
-    return json({ error: ai.name, status: res.status, detail }, 502);
+  // Free tiers are sometimes busy: try the next model on "busy", "rate limited" or "no such model".
+  const RETRY = new Set([404, 429, 500, 502, 503, 504]);
+  let res, detail = '';
+  for (const model of ai.models) {
+    res = await fetchFn(ai.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ai.key}` },
+      // generous token limit: some models spend part of it "thinking" before answering
+      body: JSON.stringify({ model, temperature: 0.8, max_tokens: 1024,
+        messages: [{ role: 'system', content: systemPrompt(c.p, c.route, c.slots) }, ...messages] }),
+    });
+    if (res.ok) break;
+    detail = clip(await res.text(), 300);
+    console.error(ai.name, model, 'error', res.status, detail);
+    if (!RETRY.has(res.status)) break;
   }
+  if (!res.ok) return json({ error: ai.name, status: res.status, detail }, 502);
   const data = await res.json();
   const reply = clip(data?.choices?.[0]?.message?.content, 1200).trim();
   return json({ reply: reply || '…' });
