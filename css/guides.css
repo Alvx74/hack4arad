@@ -106,13 +106,21 @@ body[data-screen="minigame"] .gd { --gd-bottom: calc(var(--gd-gap) + env(safe-ar
 .gd-msg.typing { display: flex; gap: 4px; padding: 12px 14px; }
 .gd-msg.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: gd-hop 1s ease-in-out infinite; }
 .gd-msg.typing i:nth-child(2) { animation-delay: .15s; } .gd-msg.typing i:nth-child(3) { animation-delay: .3s; }
-.gd-compose { flex: none; display: grid; gap: 6px; padding: 10px 12px 12px; border-top: var(--bw) solid var(--line); }
+.gd-msg.note.err { color: var(--red-text); background: var(--red-soft); border-color: var(--red); }
+.gd-quick { flex: none; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 8px 12px 0; border-top: var(--bw) solid var(--line); }
+.gd-quick::-webkit-scrollbar { display: none; }
+.gd-chip { flex: none; min-height: 34px; padding: 4px 12px; border: var(--bw) solid var(--edge); border-radius: 999px; background: transparent; color: var(--text); font: 700 .85rem var(--font); cursor: pointer; white-space: nowrap; }
+.gd-chip:hover:not(:disabled) { background: var(--text); color: var(--on-text); border-color: var(--on-text); }
+.gd-chip:disabled { opacity: .45; cursor: default; }
+.gd-compose { flex: none; display: grid; gap: 6px; padding: 8px 12px 12px; }
 .gd-compose label { font-size: .82rem; font-weight: 700; color: var(--muted); }
 .gd-composerow { display: flex; gap: 8px; }
-.gd-composerow input { flex: 1; min-width: 0; min-height: 46px; padding: 8px 12px; border: var(--bw) solid var(--edge); border-radius: 14px; background: var(--surface); color: var(--text); font: 700 1.1rem var(--font); font-variant-numeric: tabular-nums; }
+.gd-composerow input { flex: 1; min-width: 0; min-height: 46px; padding: 8px 14px; border: var(--bw) solid var(--edge); border-radius: 14px; background: var(--surface); color: var(--text); font: 500 1rem var(--font); }
 .gd-composerow input:focus { outline: var(--bw) solid var(--blue); outline-offset: 0; border-color: #fff; }
 .gd-send { min-height: 46px; padding: 8px 14px; border-radius: 14px; }
 .gd-send svg { width: 18px; height: 18px; fill: currentColor; }
+.gd-send:disabled { opacity: .5; }
+@media (max-width: 420px) { .gd-send span { display: none; } }
 
 /* phones: the window takes the width of the screen; on the map it moves up
    beside the zoom buttons, because the bottom holds the directions card and dock */

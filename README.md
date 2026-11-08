@@ -101,9 +101,33 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 - `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
 - After sign-in the dashboard has two tiles: **Vizionare pe viu** (GPS map) and **Joc interactiv** (the game below).
 
-## Ghizi locali (chat)
+## Ghizi locali (chat with Grok)
 
-The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with the guide → **Selectează o oră**. The guide accepts 3 times out of 4 (`ACCEPT_CHANCE = 0.75` in `js/guides.js`); otherwise they are busy at that hour. On accepting: "Super! Vom începe turul la …" with the end time. It is a demo: nothing is sent or booked. Code in `js/guides.js`, styles in `css/guides.css`, photos in `assets/guides/`.
+The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with that guide. The guide writes first, introduces themself and suggests the hours they are free (two today if there's still time, two tomorrow; also shown as quick-reply chips); the player writes anything in the text box. The guide confirms a time with the end time, or says they're busy and suggests their free hours. It is a demo: nothing is really booked.
+
+The answers come from **Grok (xAI)** through a Supabase Edge Function, `supabase/functions/guide-chat`. The API key is a Supabase secret and never reaches the browser or this repository. Each guide's name and personality are defined in that function (on the server):
+
+| Guide | Personality |
+|---|---|
+| Gheorghe Ardelean, 63 | retired historian, calm and a little solemn, precise dates and anecdotes |
+| Andrei Bălan, 38 | energetic storyteller, jokes, Arad's legends, the odd emoji |
+| Ioana Crișan, 31 | architect, organised, façades and building styles |
+| Radu Popa, 34 | relaxed, friendly, short answers, a bit of English |
+| Dan Mureșan, 56 | hiker and nature lover, the Mureș bank and parks, practical tips |
+
+**One-time setup** (needs the [Supabase CLI](https://supabase.com/docs/guides/cli) and access to the project):
+
+```bash
+supabase login
+supabase functions deploy guide-chat --project-ref scplcjroxictdslyrfez
+supabase secrets set XAI_API_KEY=<the Grok API key> --project-ref scplcjroxictdslyrfez
+# optional: another model (default grok-latest)
+supabase secrets set GROK_MODEL=grok-latest --project-ref scplcjroxictdslyrfez
+```
+
+Or in the dashboard: *Edge Functions → Deploy a new function* named `guide-chat` with the contents of `index.ts`, and *Edge Functions → Secrets* → `XAI_API_KEY`. Only signed-in players can call it. Until it is deployed, the chat shows "Chatul cu ghizii nu este încă activat pe server." Never put the key in the site's code: the repository and the site are public.
+
+Code: `js/guides.js` (the app), `database/guide-chat.js` (calls the function), `css/guides.css`, photos in `assets/guides/`.
 
 Tour length (side quests not included): the walking distance between the route's stops on real streets (OSRM foot router), walked at a guided-group pace of 3.5 km/h, plus 10 minutes at each stop.
 

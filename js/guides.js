@@ -4,9 +4,11 @@
 //
 // Flow: round button → intro card ("Înapoi" / "Doresc un ghid") → the guides
 // listed like a messenger while a loader searches ~5 s → one guide is picked →
-// choose Traseul 1, 2 or 3 → chat with the guide → "Selectează o oră" →
-// the guide accepts 75% of the time (start and end time), otherwise says they're busy.
-// Everything here is a demo: nothing is sent anywhere.
+// choose Traseul 1, 2 or 3 → chat with the guide, who answers through Grok
+// (supabase/functions/guide-chat keeps the API key on the server). Each guide
+// has their own personality and a few free hours this session, which they
+// suggest; the player writes freely in the text box. Nothing is really booked.
+import { backend } from './backend.js';
 
 /* ---------- guides ---------- */
 const GUIDES = [
@@ -31,13 +33,21 @@ export function tourMinutes(routeId, stops) {
 
 /* ---------- helpers ---------- */
 const SEARCH_MS = 5000;
-const ACCEPT_CHANCE = 0.75;   // how often the guide is free at the chosen hour
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const km = m => (m / 1000).toFixed(1).replace('.', ',') + ' km';
 const dur = min => (min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min` : `${min} min`);
-const toMin = hhmm => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
 const hhmm = min => { const d = ((min % 1440) + 1440) % 1440; return `${String(Math.floor(d / 60)).padStart(2, '0')}:${String(d % 60).padStart(2, '0')}`; };
-const nowRounded = () => { const d = new Date(); return hhmm(Math.ceil((d.getHours() * 60 + d.getMinutes() + 30) / 15) * 15); };
+
+// A few free start times for the guide (today if there's still time, and tomorrow),
+// every half hour between 09:00 and 18:00, at least an hour from now.
+function freeSlots() {
+  const d = new Date(), now = d.getHours() * 60 + d.getMinutes();
+  const all = []; for (let m = 9 * 60; m <= 18 * 60; m += 30) all.push(m);
+  const pick = (list, n) => list.sort(() => Math.random() - 0.5).slice(0, n).sort((a, b) => a - b);
+  const today = pick(all.filter(m => m >= now + 60), 2).map(m => ({ day: 'azi', t: hhmm(m) }));
+  const tomorrow = pick(all.slice(), today.length ? 2 : 3).map(m => ({ day: 'mâine', t: hhmm(m) }));
+  return [...today, ...tomorrow];
+}
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const ICON_CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><circle cx="8.5" cy="9.5" r="1.2"/><circle cx="12" cy="9.5" r="1.2"/><circle cx="15.5" cy="9.5" r="1.2"/></svg>';
@@ -48,7 +58,7 @@ const ICON_SEND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16
 /* ---------- state ---------- */
 let app = null;          // { routes(), place(id) }
 let root, win, view;     // DOM
-let guide = null, route = null, run = 0, booked = null;
+let guide = null, route = null, run = 0, slots = [], hist = [], busy = false;
 
 const avatar = (g, cls = '') => `<img class="gd-av ${cls}" src="${g.photo}" alt="" width="44" height="44" loading="lazy">`;
 
@@ -131,26 +141,21 @@ function chooseRoute() {
 function openChat(routeId) {
   run++;
   route = app.routes().find(r => r.id === routeId);
-  booked = null;
-  const n = route.locationIds.length, min = tourMinutes(route.id, n);
-  const first = app.place(route.locationIds[0]), last = app.place(route.locationIds[n - 1]);
+  slots = freeSlots(); hist = []; busy = false;
   win.className = 'gd-win gd-full';
   view.innerHTML = `${header(esc(guide.name), '<i class="gd-dot inline"></i> online', 'list')}
-    <div class="gd-body gd-chat">
-      <div class="gd-msgs" aria-live="polite"></div>
-    </div>
+    <div class="gd-body gd-chat"><div class="gd-msgs" aria-live="polite"></div></div>
+    <div class="gd-quick" aria-label="Orele libere ale ghidului">${slots.map(x =>
+      `<button type="button" class="gd-chip" data-gd="slot" data-text="Pot ${x.day} la ${x.t}.">${x.day} ${x.t}</button>`).join('')}</div>
     <form class="gd-compose" novalidate>
-      <label for="gdTime">Selectează o oră</label>
       <div class="gd-composerow">
-        <input id="gdTime" type="time" step="900" value="${nowRounded()}" required>
+        <input id="gdText" type="text" maxlength="400" autocomplete="off" placeholder="Scrie un mesaj…" aria-label="Mesaj către ghid">
         <button type="submit" class="btn primary gd-send" aria-label="Trimite">${ICON_SEND}<span>Trimite</span></button>
       </div>
     </form>`;
   view.querySelector('.gd-headtext').insertAdjacentHTML('beforebegin', avatar(guide, 'sm'));
-  say('them', `Salut! Sunt ${guide.first}, ghid în Arad. 👋`);
-  say('them', `Ai ales ${route.name}: ${n} opriri, de la ${first ? first.name : 'prima oprire'} până la ${last ? last.name : 'ultima oprire'}.`);
-  say('them', `Traseul are ${km(ROUTE_METERS[route.id] || 0)} și durează cam ${dur(min)}, cu tot cu poveștile de la fiecare oprire. La ce oră vrei să începem?`);
-  view.querySelector('.gd-compose').addEventListener('submit', e => { e.preventDefault(); askTime(); });
+  view.querySelector('.gd-compose').addEventListener('submit', e => { e.preventDefault(); send(view.querySelector('#gdText').value); });
+  ask();   // the guide writes first: greeting + free hours
 }
 
 function say(who, text) {
@@ -164,32 +169,58 @@ function say(who, text) {
   return el;
 }
 
-async function askTime() {
-  const input = view.querySelector('#gdTime');
-  const send = view.querySelector('.gd-send');
-  if (!input.value) { input.focus(); return; }
-  const start = input.value;
+function setBusy(on) {
+  busy = on;
+  const b = view.querySelector('.gd-send');
+  if (b) b.disabled = on;
+  view.querySelectorAll('.gd-chip').forEach(c => { c.disabled = on; });
+}
+
+function send(text) {
+  text = String(text || '').trim();
+  if (!text || busy) return;
+  const input = view.querySelector('#gdText');
+  if (input) input.value = '';
+  say('me', text);
+  hist.push({ role: 'user', content: text });
+  ask();
+}
+
+// Sends the conversation to the guide and shows the answer.
+async function ask() {
   const my = run;
-  send.disabled = true; input.disabled = true;
-  say('me', `Aș vrea să începem la ${start}.`);
+  setBusy(true);
   const typing = say('them typing', '');
   typing.innerHTML = '<i></i><i></i><i></i>';
-  await sleep(1300 + Math.random() * 700);
+  const n = route.locationIds.length;
+  const payload = {
+    guideId: guide.id,
+    route: { name: route.name, stops: route.locationIds.map(id => (app.place(id) || {}).name || id),
+             km: km(ROUTE_METERS[route.id] || 0).replace(' km', ''), minutes: tourMinutes(route.id, n) },
+    slots: slots.map(x => `${x.day} la ${x.t}`),
+    messages: hist,
+  };
+  let reply = null, problem = '';
+  try {
+    const b = await backend();
+    reply = await b.guideChat(payload);
+  } catch (e) {
+    const status = e && e.context && e.context.status;
+    console.warn('[guides]', e);
+    problem = status === 404 ? 'Chatul cu ghizii nu este încă activat pe server.'
+      : /fetch|network|load failed/i.test(String(e && e.message)) ? 'Nu ne putem conecta la server. Verifică internetul și încearcă din nou.'
+      : 'Ghidul nu poate răspunde acum. Încearcă din nou peste puțin timp.';
+  }
   if (my !== run) return;
   typing.remove();
-  if (Math.random() >= ACCEPT_CHANCE) {
-    say('them', `Sunt ocupat${guide.fem ? 'ă' : ''} în acest interval orar.`);
-    say('them', 'Poți alege altă oră?');
-  } else {
-    const n = route.locationIds.length, min = tourMinutes(route.id, n);
-    const endMin = toMin(start) + min, end = hhmm(endMin);
-    const first = app.place(route.locationIds[0]);
-    booked = { start, end };
-    say('them', `Super! Vom începe turul la ${start}.`);
-    say('them', `Durează cam ${dur(min)}, deci terminăm pe la ${end}${endMin >= 1440 ? ' (a doua zi)' : ''}. Ne vedem la ${first ? first.name : 'prima oprire'}!`);
-    say('note', `Tur programat: ${route.name}, ${start}–${end} cu ${guide.name}`);
+  if (reply) { hist.push({ role: 'assistant', content: reply }); say('them', reply); }
+  else {
+    if (hist.length && hist[hist.length - 1].role === 'user') hist.pop();   // so the same message can be sent again
+    say('note err', problem);
   }
-  send.disabled = false; input.disabled = false;
+  setBusy(false);
+  const input = view.querySelector('#gdText');
+  if (input && matchMedia('(hover: hover)').matches) input.focus({ preventScroll: true });
 }
 
 /* ---------- open / close ---------- */
@@ -227,6 +258,7 @@ export function initGuides(opts) {
     if (act === 'close') close();
     else if (act === 'search') search();
     else if (act === 'route') openChat(b.dataset.id);
+    else if (act === 'slot') send(b.dataset.text);
     else if (act === 'list') { guide = null; route = null; showIntro(); }
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && root.classList.contains('open')) { e.stopPropagation(); close(); } }, true);
