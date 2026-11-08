@@ -49,16 +49,16 @@ export const WIKI_IMAGE_WIDTH = 960;
 
 // Map colours, taken from the Arad coat of arms (keep in sync with css/styles.css).
 export const MAP_COLORS = {
-  route: '#2b38b8',
-  ring: '#2b38b8',
-  accuracy: '#2b38b8',
-  user: '#d4141c',
+  route: '#3c4a8f',
+  ring: '#3c4a8f',
+  accuracy: '#3c4a8f',
+  user: '#b53a3c',
 };
 // Lighter blue so the route stays visible on the dark map.
 export const MAP_COLORS_DARK = {
-  route: '#7d89ff',
-  ring: '#7d89ff',
-  accuracy: '#7d89ff',
-  user: '#ff4a52',
+  route: '#8d98d6',
+  ring: '#8d98d6',
+  accuracy: '#8d98d6',
+  user: '#d06563',
 };
 

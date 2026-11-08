@@ -82,7 +82,8 @@ revoke all on function public.record_place_result(text, int, int) from public;
 grant execute on function public.record_place_result(text, int, int) to authenticated;
 
 
--- One row per player: name, number of first bloods, total score.
+-- One row per account (players without results yet show 0): name, number of
+-- first bloods, total score. Google accounts may only have full_name / name.
 -- The app adds the rank, depending on the chosen sort.
 create or replace function public.get_leaderboard()
 returns table (username text, first_bloods int, score int, is_me boolean)
@@ -92,13 +93,16 @@ security definer
 set search_path = public
 as $$
   select
-    coalesce(nullif(trim(u.raw_user_meta_data ->> 'display_name'), ''), 'Explorator') as username,
-    (count(*) filter (where r.first_blood))::int                                       as first_bloods,
-    sum(case when r.first_blood then r.best_score * 2 else r.best_score end)::int      as score,
-    r.user_id = auth.uid()                                                             as is_me
-  from public.place_results r
-  join auth.users u on u.id = r.user_id
-  group by r.user_id, u.raw_user_meta_data
+    coalesce(nullif(trim(u.raw_user_meta_data ->> 'display_name'), ''),
+             nullif(trim(u.raw_user_meta_data ->> 'full_name'), ''),
+             nullif(trim(u.raw_user_meta_data ->> 'name'), ''),
+             'Explorator')                                                                  as username,
+    (count(r.place_id) filter (where r.first_blood))::int                                   as first_bloods,
+    coalesce(sum(case when r.first_blood then r.best_score * 2 else r.best_score end), 0)::int as score,
+    u.id = auth.uid()                                                                       as is_me
+  from auth.users u
+  left join public.place_results r on r.user_id = u.id
+  group by u.id, u.raw_user_meta_data
   order by score desc, first_bloods desc;
 $$;
 

@@ -1,25 +1,25 @@
 Niche:
 -Climb Again Arad
-	-Cum îl chema pe fostul proprietar? -Ionathan
+	-Cum îl chema pe fostul proprietar? -Ionathan // Noris, Janeta, Todosan
 -Parcul Zona 300
-	-Câte mese de șah sunt în parc? - 3
+	-Câte mese de șah sunt în parc? - 3 // 2, 1, 0
 -Agora Mall
-	-Ce se desfășoară în subsolul mallului? - Karting
+	-Ce se desfășoară în subsolul mallului? - Karting // Biliard, Bowling, Darts
 -Stadionul Gloria
-	-Ce sport se poate practica în interiorul traseului de alergat? - Aruncarea Ciocanului
+	-Ce sport se poate practica în interiorul traseului de alergat? - Aruncarea Ciocanului // Aruncarea mingii de oină, Lovirea ciocanului, Aruncarea discului
 
 Affiliate:
 -Banca Transilvaniei Arad
-	-Câte ATM-uri sunt la intrare? -2
+	-Câte ATM-uri sunt la intrare? -2 // 1, 4, 0
 -Facultatea Aurel Vlaicu, Corp M
-	-Ce concurs s-a susținut aici și a dus la realizarea acestui proiect? - HACK4ARAD
+	-Ce concurs s-a susținut aici și a dus la realizarea acestui proiect? - HACK4ARAD // Caius Iacob, IIOT, LuminaMath
 
 Producatori locali:
 -Langoșeria Felix
-	-Cum îl cheamă pe fiul lui Felix? - Felix
+	-Cum îl cheamă pe fiul lui Felix? - Felix // Xilef, Andrei, Alex
 -Prăvălia Danei
-	-Cu cine e vecină? - Felix 
+	-Cu cine e vecină? - Felix // Daniela, Ovidiu, Pascal
 -Piața Mihai Viteazu
-	-Care este produsul predominant vândut? - Florile
+	-Care este produsul predominant vândut? - Florile // Înghețată, Ierburi, Detergent
 -Ar Ski Shop
-	-Pentru ce sunt cunoscuți? - prețuri accesibile
+	-Pentru ce sunt cunoscuți? - prețuri accesibile // motoare, biciclete, umbrele de plajă

@@ -39,6 +39,35 @@ export async function signIn(email, password) {
 }
 
 
+// GOOGLE: leaves the page for Google's account picker and comes back to
+// redirectTo signed in (detectSessionInUrl finishes it). The same call creates
+// the account the first time, so it serves as both sign up and log in.
+export async function signInWithGoogle(redirectTo) {
+
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo,
+            queryParams: { prompt: 'select_account' }
+        }
+    });
+
+    if (error) throw error;
+}
+
+
+// SET DISPLAY NAME (stored in the user metadata, read by the leaderboard)
+export async function setDisplayName(displayName) {
+
+    const { data, error } =
+        await supabase.auth.updateUser({ data: { display_name: displayName } });
+
+    if (error) throw error;
+
+    return data.user;
+}
+
+
 // LOGOUT
 export async function signOut() {
 

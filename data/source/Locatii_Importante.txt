@@ -1,56 +1,86 @@
-Important locations
 TRASEU 1:
 -Biserica Roșie
-	-Câte uși secundare are? -4
-	-În ce limbă este scrisul de la intrare? - Maghiară
-	-Câte culori principale are biserica? - 3
+	-Câte uși secundare are? -4 // 1, 5, 2
+	-În ce limbă este scrisul de la intrare? - Maghiară // slavă, română, bulgară
+	-Câte culori principale are biserica? - 3 // 1, 2, 4
 -Primăria Arad
-	-Cine este arhitectul? - Pekkar Francisc
-	-Câte globuri are fiecare stâlp de iluminare? - 5
-	-Primăria este predominant albă, dar mai are și o altă culoare. Care este aceasta? - gri
+	-Cine este arhitectul? - Pekkar Francisc // Pekka Franco, Francisc Luida, Aron Franco
+	-Câte globuri are fiecare stâlp de iluminare? - 5 // 7, 1, 3
+	-Primăria este predominant albă, dar mai are și o altă culoare. Care este aceasta? - gri // roz, roșu, mov
 -Filarmonica Arad
-	-Care este anul inaugurării? - 1911-1913
-	-Câte statui are de la trepte până la intrare? - 1
-	-
+	-Care este anul inaugurării? - 1911-1913 // 1915-1917, 1915-1918, 1910-1911
+	-Câte statui are de la trepte până la intrare? - 1 // 2, 0, 3
+	-Care este denumirea alternativă? - Palatul Cultural // Palatul Culturii, Patrimoniul Culturii, Patrimoniul Cultural
 -Complexul Muzeal Arad
-	-Care este numărul de intrări pe care scrie Muzeu? - 2
+	-Care este numărul de intrări pe care scrie Muzeu? - 2 // 4, 1, 5
+	-În general, câți porumbei sunt la intrare? - cel puțin 1 // 0, 40, peste 50
+	-Ce este secțiunea de la intrare? - Magazin de suveniruri // Prima expoziție, Scurt rezumat, Statuia fondatorului
 -Vechiul Cazinou
-	-Care este numărul de stâlpi de iluminare din fața cazinoului? - 6
+	-Care este numărul de stâlpi de iluminare din fața cazinoului? - 6 // 8, 4, 5
+	-Ce eveniment important școlar e ținut aici (întreabă un localnic)? - Banchet , Nuntă, Ziua elevului, Aniversarea școlii
+	-Cu ce este înconjurat Vechiul Cazino? - Gard viu // Mușchi, Licheni, Crovuri
 -Col. Naț. Moise Nicoară
-	-Care este anul inaugurării? - 1869- 1873
+	-Care este anul inaugurării? - 1869-1873 // 1869, 1873, 1870-1873
+	-Ce este vizavi de școală? - Teren de sport // Teren de tenis, Teren de volei, Aruncat cu sulița 
+	-Care este fostul nume al instituții, asemenea terenului? - Ioan Slavici // Ion Slavici, Ioan Slav, Ionescu Andrei
 -Ștrandul Neptun
-	-
+	-Câte tobogane are? - 4 // 3, 2, 1
+	-Cum e Neptun în limba greacă? - Poseidon // Ares, Apollo, Zeus
+	-Pentru ce grupă de vârstă este mai potrivit ștrandul? - Copii // Vârstnici, Adulți, Adolescenți
 
 
 TRASEU 2:
 -Piața Avram Iancu
-	-
+	-Ce statuie este în mijlocul pieței? - Statuia Soldatului Român // Statuia Filozofului Român, Statuia Primarului, Statuia lui Ceaușescu
+	-Care este numele celui mai apropiat punct de interes? - Teatru // Ștrandul Neptun, Catedrala Sfânta Treime, Stadionul UTA
+	-Ce culori au casele din împrejurimi? - Multicolor // Alb, Negru, Gri
 -Muzeul de Istorie a Calculatoarelor Arad
-	-
+	-Este această locație vizibilă din drum? - Oarecum // Nu, Imposibil, Deloc
+	-Ce culoare are clădirea acestuia? - Albastru // Verde, Galben, Roșu
+	-Se poate vizita aceast muzeu fără programare? - Nu // Da, Fără ghid, Cu ghid
 -Teatrul Ioan Slavici
-	-Câte felinare sunt în fața teatrului? - 7
+	-Câte felinare sunt în fața teatrului? - 7 // 8, 4, 6
+	-În câte săli se pot desfășura spectacole? - 2 // 4, 1, 5
+	-De unde se pot achiziționa bilete? - La intrare // În sală, La primărie, Pe scări
 -Biserica Romano-Catolică Anton
-	-Care sunt culorile statuii de la intrare? - Roz și Albastru
+	-Care sunt culorile statuii de la intrare? - Roz și Albastru // Roșu și Albastru, Roșu și Verde, Galben și Roz
+	-Cărei naționalități îi este adresată în principal? - Maghiarilor // Românilor, Evreilor, Bulgarilor
+	-Care transport public este cel mai aproape de ea? - tramvaiul // autobuzul, taxiul, trenul
 -Biblioteca Județeană
-	-
+	-La ce etaj este secțiunea copiilor? - etaj 1 // parter, etaj 3, subsol
+	-Ce club a fost ultimul inaugurat în clădire? - 3D Printind și Modeling // Literatură, Filozofie, Fotografie
+	-Cât costă accesul la bibliotecă anual? - 0 // 600, 300, 120
 -Teatrul de Marionete
-	-
--Casa Pianului
-	-
+	-Unde este intrarea actoriilor? - În lateral // În față, Nu este, Pe scara exterioară
+	-Pentru ce a fost inițial fondat? - Teatru cu Marionete // Teatru cu mimă, Teatru mut, Teatru improvizat
+	-Care este primul lucru vizibil la intrare? - Oglindă // Sala, Scena, Culisele
 -Piața Reconcilierii
-	-Câte lumini sunt în jurul statuii celor 13 generali? - 17
-	-Care parte din statuia Arcului de Triumf este aurită? - degetele
+	-Câte lumini sunt în jurul statuii celor 13 generali? - 17 // 13, 15, 11
+	-Care parte din statuia Arcului de Triumf este aurită? - degetele // pălăria, arma, pieptul
+	-Cartierul cărei naționalități este în zonă? - maghiari // români, bulgari, evrei
 
 TRASEU 3:
 -Catedrala Sfânta Treime
-	-
+	-A câta este ca importanță din municipiul Arad? - Întâia // A doua, A Patra, Nu e importantă
+	-În ce zonă a orașului se află? - Podgoria // Micălaca, Vladimirescu, Alfa
+	-Cărui religie aparține? - Creștin ortodox // Creștin catolic, Protestant, Neoprotestant
 -Lacul Pădurice
-	-
+	-Ce animal predomină în zona lacului? - Porumbelul // Căprioara, Ursul Brun, Vulpea Comună
+	-Ce se întâmplă seara la lac? - Se aprind luminile // Se sting luminile, Sar peștii, Pescuiesc săritorii
+	-Ce obiect predomină în jurul lacului? - bănci // scaune, tobogane, gherete
 -Gara CFR
-	-
+	-Ce se află în fața acesteia? - Tren vechi // Vagon, Expoziție, Turn cu ceas
+	-Ce fel de tonomate sunt în interiorul clădirii? - De cărți // De noroc, De cartele, De suveniruri
+	-Cât de des vin trenurile? - Zilnic // Săptămânal, Lunar, Bisăptămânal
 -Atrium Mall
-	-
+	-Până la ce oră este deschis? - 22 // 21, 23, 22:30
+	-Ce firmă individuală ocupă cel mai mult spațiu de la ultimul etaj? - Cinema City // Mesopotamia, Chinezesc, Sala Kratos
+	-Câte nivele are parcarea? - 4 // 2, 3, 1
 -AFI
-	-
+	-Ce magazin sportiv se află în complexul acesta? - Dechatlon // Hervis, Starbucks, Sportisimo
+	-Ce magazine se află și aici și în Atrium Mall? - Cărturești și Mesopotamia // Cărturești și Carrefour, Starbucks și Cărturești, Media Galaxy și Cărturești
+	-Ce comunitate îngrădită se află în apropiere? - ARED City // ARAD City, RED Arad, RED City
 -Stadionul UTA
-	-
+	-Ce echipă joacă acasă pe acest teren? - UTA // UAT, TUA, TAU
+	-Ce incorporează această clădire? - Magazin de suveniruri // Magazin de bilete, Gherete de donații, Locuința jucătorilor
+	-Ce statuie este vizavi de această clădire? - Statuia fotbalistului // Statuia creatorului stadionului, Statuia scriitorului, Statuia filozofului

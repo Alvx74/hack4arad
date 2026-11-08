@@ -6,6 +6,7 @@
 //   getCurrentUser()                       -> Promise<user | null>
 //   signIn(email, password)                -> Promise<user>
 //   signUp(name, email, password)          -> Promise<{ user } | { needsConfirmation: true }>
+//   signInWithGoogle()                     -> leaves the page; back signed in (or with an error, see oauthError)
 //   signOut()                              -> Promise<void>
 //   requestPasswordReset(email)            -> Promise<void>
 //   setNewPassword(password)               -> Promise<void>
@@ -61,7 +62,39 @@ async function api() {
   catch (e) { console.warn('[auth] backend failed to load', e); throw new Error(OFFLINE); }
 }
 
+// Google accounts arrive with full_name / name instead of display_name. Turn it
+// into a valid display name once and save it, so the leaderboard shows it too.
+function nameFromGoogle(meta) {
+  const raw = String(meta.full_name || meta.name || '').normalize('NFC');
+  const clean = raw.replace(/[^\p{L}\p{N} _.-]+/gu, ' ').trim().replace(/\s+/g, ' ');
+  if (clean.length <= 24) return clean;
+  const first = clean.split(' ')[0];
+  return (first.length >= 2 ? first : clean).slice(0, 24).trim();
+}
+async function ensureDisplayName(u, b) {
+  const meta = u.user_metadata || {};
+  if (meta.display_name) return u;
+  const name = nameFromGoogle(meta);
+  if (validateDisplayName(name).error) return u;
+  try { return await b.setDisplayName(name) || u; }
+  catch (e) { console.warn('[auth] could not save the display name', e); return { ...u, user_metadata: { ...meta, display_name: name } }; }
+}
+
+// After coming back from Google with an error (e.g. the player pressed Cancel),
+// the address carries error / error_description. Returns a Romanian message or ''.
+export function oauthError() {
+  const p = new URLSearchParams(location.search + '&' + location.hash.replace(/^#/, ''));
+  const err = p.get('error'), desc = p.get('error_description') || '';
+  if (!err) return '';
+  history.replaceState(null, '', location.pathname);
+  if (err === 'access_denied') return 'Conectarea cu Google a fost anulată.';
+  if (/provider is not enabled|unsupported provider/i.test(desc)) return 'Conectarea cu Google nu este activată încă pe server.';
+  console.warn('[auth] oauth', err, desc);
+  return 'Conectarea cu Google n-a reușit. Încearcă din nou.';
+}
+
 async function toUser(u, b) {
+  u = await ensureDisplayName(u, b);
   let name = '';
   try {
     const p = await b.getMyProfile();
@@ -98,6 +131,15 @@ export const auth = {
     }
     if (!d.session) return { needsConfirmation: true };
     return { user: await toUser(d.user, b) };
+  },
+
+  async signInWithGoogle() {
+    const b = await api();
+    try { await b.signInWithGoogle(returnUrl()); }
+    catch (e) {
+      if (/provider is not enabled|unsupported provider/i.test(String(e && e.message))) throw new Error('Conectarea cu Google nu este activată încă pe server.');
+      throw new Error(translate(e));
+    }
   },
 
   async signOut() {

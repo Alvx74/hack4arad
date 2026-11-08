@@ -1,7 +1,7 @@
 // Small canvas confetti burst in the coat-of-arms colours.
 // Skipped when the visitor asked for reduced motion.
 
-const COLORS = ['#2b38b8', '#d4141c', '#f4c20d', '#2e7d32', '#ffffff'];
+const COLORS = ['#3c4a8f', '#b53a3c', '#d6ab45', '#4d7a4f', '#f4f1ea'];
 
 export function confetti({ duration = 3800, count = 180 } = {}) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

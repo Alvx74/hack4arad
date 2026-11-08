@@ -3,7 +3,7 @@
 // get nudged away. A few points use the coat-of-arms colours.
 // Pauses when the screen is hidden; draws one still frame for reduced motion.
 
-const ACCENTS = ['#f4c20d', '#d4141c', '#5b68f0'];
+const ACCENTS = ['#d6ab45', '#c2504f', '#7480c4'];
 const LINK = 120;        // px: max distance for a line between two points
 const REACH = 170;       // px: pointer influence radius
 
@@ -61,7 +61,7 @@ function draw() {
     if (pointer.on) {
       const d = Math.hypot(a.x - pointer.x, a.y - pointer.y);
       if (d < REACH) {
-        ctx.strokeStyle = `rgba(244,194,13,${(1 - d / REACH) * 0.5})`;
+        ctx.strokeStyle = `rgba(214,171,69,${(1 - d / REACH) * 0.5})`;
         ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
       }
     }

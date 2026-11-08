@@ -54,7 +54,7 @@ vendor/leaflet/         map library (BSD-2 licence)
 The current game catalogue lives in `data/game-data.json`.
 
 - `routes` defines the three route choices shown after sign-in. Each route has an ordered `locationIds` list.
-- `places` contains the location details and trivia. Every route stop has at least one question entry.
+- `places` contains the location details and trivia: three questions for every route stop and one for every side quest, taken from the team's final lists in `data/source/` (Locatii_Importante.txt, SideQuest.txt). Answer positions are mixed, so the right answer isn't always first.
 - Questions marked `placeholder: true` are intentionally unfinished. The stop shows the draft question and a "Continuă la oprirea următoare" button, which finishes the stop and routes to the next one like a completed quiz.
 - `sidequests` contains the independent side-quest location IDs and categories. Side quests appear separately and unlock when the player's GPS position enters the interaction radius. Completing one does not advance the main route.
 - Each place needs a unique `id`, a display name, and decimal-degree `lat` / `lon` coordinates.
@@ -93,7 +93,7 @@ The moon/sun button in the header switches themes; the choice is saved in the br
 
 ## Design
 
-Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), large bold titles, rounded-square buttons and no shadows. Every edge is a 2 px border in the colour opposite to its fill: light surfaces get a dark border, coloured fills get a white border with a ring in their own colour, and dark mode flips them. Surfaces over the map and the login sky are see-through (blurred), with an opaque fallback for browsers without blur. Neutral buttons swap to the opposite colours on hover. Colours come from the Arad coat of arms (`assets/brand/stema-arad.png`), also shown as the four-colour stripe under the header; they are variables at the top of `css/styles.css` (map colours in `js/config.js`).
+Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), large bold titles, rounded-square buttons and no shadows. Every edge is a 2 px border in the colour opposite to its fill: light surfaces get a dark border, coloured fills get a white border with a ring in their own colour, and dark mode flips them. Surfaces over the map and the login sky are see-through (blurred), with an opaque fallback for browsers without blur. Neutral buttons swap to the opposite colours on hover. Colours are muted versions of the Arad coat of arms (`assets/brand/stema-arad.png`): blue `#3c4a8f`, red `#b53a3c`, gold `#d6ab45`, green `#4d7a4f`, also shown as the four-colour stripe under the header. They are variables at the top of `css/styles.css` (map colours in `js/config.js`, confetti in `js/confetti.js`, login sky in `js/sky.js`).
 
 - `js/sky.js`: the login background, drifting "constellations" that react to the mouse or finger (one still frame if the device asks for reduced motion).
 - `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
@@ -114,7 +114,7 @@ After signing in, players land on a dashboard with two choices: **Explorează or
 
 Scoring: each place counts with the player's best score there (1 point per correct answer). If the player's **first** attempt at a place had every answer right, that place is a **first blood** and counts double. The leaderboard shows rank, player, first bloods and score; it is sorted by score, with a "First blood" toggle that sorts by first bloods instead.
 
-**One-time setup:** run `database/leaderboard.sql` in Supabase → SQL Editor. It creates the `place_results` table (players can only read their own rows), `record_place_result()` (called after every finished quiz; the first call for a place decides first blood) and `get_leaderboard()` (names and totals only, no e-mails). Until it is run, the leaderboard screen says it isn't set up yet and the rest of the app works normally. Results from before the setup are not counted.
+**One-time setup:** run `database/leaderboard.sql` in Supabase → SQL Editor (safe to run again after updates). Every account appears on the leaderboard, with 0 points until it finishes a stop. It creates the `place_results` table (players can only read their own rows), `record_place_result()` (called after every finished quiz; the first call for a place decides first blood) and `get_leaderboard()` (names and totals only, no e-mails). Until it is run, the leaderboard screen says it isn't set up yet and the rest of the app works normally. Results from before the setup are not counted.
 
 ## Accounts (Supabase)
 
@@ -134,9 +134,19 @@ What the front page does:
 
 - **Intră în cont**: email + password.
 - **Cont nou**: display name, email, password (min. 6 characters). The display name is stored as `display_name` in the user metadata; the name shown in the app comes from `profiles`, falling back to that metadata.
+- **Continuă cu Google** (on both tabs; "Creează cont cu Google" on *Cont nou*): one button creates the account the first time and signs in afterwards. The player's Google name is shortened to a valid display name (first name if the full name is over 24 characters) and saved as `display_name`, so the leaderboard shows it.
 - **Ai uitat parola?**: sends a reset email; the link opens the app in "Alege o parolă nouă" mode.
 - If "Confirm email" is on in Supabase, sign-up shows a message to confirm the address first.
 
 Scores: when a trivia round ends with a new best score, it is sent with `save_place_score(p_place_id, p_score)`, where `p_place_id` is the location id from the CSV (e.g. `college`, text). On a device with no saved progress for that account, places with a score in `place_scores` count as finished, so the player continues where they left off. Trail progress itself (discovered / finished on this device) and own photos stay in the browser.
+
+**Google sign-in setup (one time):**
+
+1. Google Cloud Console → *APIs & Services* → *OAuth consent screen*: app name "Arad Explorer", your support email, publish it (or add testers).
+2. *Credentials* → *Create credentials* → *OAuth client ID* → *Web application*. Under **Authorised redirect URIs** add `https://scplcjroxictdslyrfez.supabase.co/auth/v1/callback`.
+3. Supabase → *Authentication* → *Sign In / Providers* → **Google**: turn it on, paste the Client ID and Client Secret, save.
+4. Make sure the app's address (and `https://localhost:8443/`) is in Supabase's **Redirect URLs** (below).
+
+Until this is done the button shows "Conectarea cu Google nu este activată încă pe server." and email accounts keep working.
 
 Supabase settings to check (Dashboard → Authentication → URL Configuration): set **Site URL** to where the app is hosted, and add the same address (and `https://localhost:8443/` for testing) to **Redirect URLs**, otherwise confirmation and reset links won't return to the app.

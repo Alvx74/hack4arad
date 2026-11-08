@@ -2,7 +2,7 @@
 // All visitor-facing text is Romanian; the dev panel (?dev=1) stays in English.
 import { DEFAULT_RADIUS, ARRIVED_METERS } from './config.js';
 import { loadTrail } from './data.js';
-import { auth, validateDisplayName, validateEmail, validatePassword, MIN_PASSWORD } from './auth.js';
+import { auth, validateDisplayName, validateEmail, validatePassword, MIN_PASSWORD, oauthError } from './auth.js';
 import { createUserStore } from './store.js';
 import { haversine, fmtDist, fmtDur, nearestOnLine, lineLength } from './geo.js';
 import { fetchRoute, stepText, currentStep } from './routing.js';
@@ -106,6 +106,8 @@ function setAuthMode(mode, { keepMsg = false } = {}) {
   $('#passLabel').textContent = mode === 'recovery' ? 'Parola nouă' : 'Parolă';
   $('#authPass').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
   $('#authSubmit').textContent = { login: 'Intră în cont', signup: 'Creează contul', forgot: 'Trimite linkul', recovery: 'Salvează parola' }[mode];
+  $('#authAlt').hidden = !tabs;
+  $('#googleLabel').textContent = mode === 'signup' ? 'Creează cont cu Google' : 'Continuă cu Google';
   $('#forgotLink').hidden = mode !== 'login';
   $('#backLink').hidden = mode !== 'forgot';
   if (!keepMsg) { authMsg(''); authOk(''); }
@@ -167,6 +169,19 @@ async function submitAuth() {
     }
   } catch (err) {
     setBusy(false);
+    authMsg(err.message || 'Ceva n-a mers. Încearcă din nou.');
+  }
+}
+
+// Google sign-in leaves the page; the player comes back already signed in.
+async function googleAuth() {
+  if (authBusy) return;
+  authMsg(''); authOk('');
+  const b = $('#googleBtn');
+  authBusy = true; b.classList.add('busy'); $('#googleLabel').textContent = 'Se deschide Google…';
+  try { await auth.signInWithGoogle(); }
+  catch (err) {
+    authBusy = false; b.classList.remove('busy'); setAuthMode(authMode, { keepMsg: true });
     authMsg(err.message || 'Ceva n-a mers. Încearcă din nou.');
   }
 }
@@ -379,7 +394,7 @@ function applyTheme() {
   document.documentElement.classList.toggle('is-dark', dark);
   $('#themeBtn').setAttribute('aria-label', dark ? 'Activează modul luminos' : 'Activează modul întunecat');
   $('#themeBtn').title = dark ? 'Mod luminos' : 'Mod întunecat';
-  document.querySelector('meta[name="theme-color"]').content = dark ? '#000000' : '#0b0f3a';
+  document.querySelector('meta[name="theme-color"]').content = dark ? '#000000' : '#1c2240';
   if (map) map.setTheme(dark);
 }
 function toggleTheme() {
@@ -1012,6 +1027,7 @@ function bindEvents() {
         break;
       case 'backtomap': showScreen('app'); map && map.refresh(); break;
       case 'authmode': setAuthMode(el.dataset.mode); break;
+      case 'google': googleAuth(); break;
       case 'peek': {
         const inp = $('#authPass'), show = inp.type === 'password';
         inp.type = show ? 'text' : 'password'; el.textContent = show ? 'Ascunde' : 'Arată';
@@ -1088,7 +1104,10 @@ async function boot() {
   const user = await auth.getCurrentUser();
   if (authMode === 'recovery') return;
   if (user) enterApp(user);
-  else { renderWelcome(); showScreen('welcome'); }
+  else {
+    renderWelcome(); showScreen('welcome');
+    const err = oauthError(); if (err) authMsg(err);
+  }
 }
 
 boot();
