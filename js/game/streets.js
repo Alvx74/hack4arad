@@ -2,6 +2,7 @@
 import { G, R, W, rng, shade } from './core.js';
 import { dome, door, roofM, win } from './draw.js';
 import { GUIDE, Hm } from './people.js';
+import { PATRONS } from './patrons.js';
 import { bald } from './outfit.js';
 
 /* ---------- streets (trasee) ---------- */
@@ -10,6 +11,7 @@ function npc(name,look,lines){return{type:'npc',name,look,lines};}
 const STREETS=[
 {id:'t1',name:'Traseul 1',route:'Revoluției – Dragalina – Mureș',sub:'De la Biserica Roșie, pe la Primărie și Palatul Cultural, până la Ștrandul Neptun',sky:['#4f98d0','#64a9da','#7cbbe3','#98cdeb','#b7def2'],tram:true,seed:11,
  seq:[
+  PATRONS.dragalina,
   npc('Ghidul Mircea',GUIDE,['Salut! Bine ai venit pe Traseul 1. Pornim de pe Bulevardul Revoluției, artera principală a Aradului.','În 1906, istoricul Nicolae Iorga a poreclit Aradul „Mica Vienă”.','La fiecare locație te așteaptă 3 întrebări. Unele răspunsuri ți le spun localnicii, pe altele le vezi cu ochii tăi: numără ușile, felinarele, statuile!','Mergi spre dreapta. Când vezi un E deasupra cuiva, apasă E. Shift te face să fugi.']),
   {f:{w:70,h:58,wall:PAL[0],floors:3}},
   npc('Contele Aradula',Hm({skin:'#e9e4f2',hair:'lins',hairC:'#111118',shirt:{c:'#f4f4f4',pat:'suit',c2:'#c0102a'},pants:{c:'#141418'},shoes:{c:'#141418'},acc:{cape:'#141418',fangs:1,lips:'#8a1030'}}),['Bună seara... adică ziua. Urăsc ziua.','Biserica Roșie e evanghelică-luterană, neogotică, ridicată în 1906 după planurile lui Szántay Lajos. E roșie de la cărămidă, nu de la ce crezi tu.','Are trei culori principale: roșul cărămizii, griul acoperișului și albul ornamentelor.','Pe lângă intrarea mare din turn, are și uși secundare pe laterale. Le-am numărat noaptea, evident.','Slujbele se țin în maghiară, așa că și inscripția de deasupra intrării e în maghiară.']),
@@ -35,6 +37,7 @@ const STREETS=[
  ]},
 {id:'t2',name:'Traseul 2',route:'Centrul vechi',sub:'De la Piața Avram Iancu, pe la teatre și bibliotecă, până la Piața Reconcilierii',sky:['#3b3a7a','#6a4a8f','#b45e8a','#e88a6a','#f6c07a'],tram:true,seed:23,
  seq:[
+  PATRONS.iancu,
   npc('Ghidul Mircea',GUIDE,['Bun venit pe Traseul 2, prin centrul vechi al Aradului!','Aici vei avea nevoie de ochi buni: culori, felinare, statui. Și de urechi bune pentru localnici.']),
   {f:{w:50,h:46,wall:PAL[0],floors:2,gable:1}},
   {f:{w:46,h:50,wall:PAL[1],floors:2,gable:1}},
@@ -61,6 +64,7 @@ const STREETS=[
  ]},
 {id:'t3',name:'Traseul 3',route:'Podgoria – Calea Aurel Vlaicu',sub:'Catedrala, lacul, gara, mall-urile și stadionul UTA',sky:['#4a92ca','#66a8d6','#86bde2','#acd4ec','#d4eaf4'],tram:true,seed:37,
  seq:[
+  PATRONS.vlaicu,
   npc('Doamna Mioara',Hm({skin:'#f1c9a5',hair:'coc',hairC:'#6b4226',shirt:{c:'#8a5bd6'},pants:{c:'#2b2730',type:'fusta'},shoes:{c:'#d7263d'},acc:{umbrella:'#3fb36a'}}),['Bună ziua! Suntem în Podgoria. Vezi catedrala mare? E Catedrala „Sfânta Treime”.','E creștin-ortodoxă și e cea mai importantă biserică din Arad, catedrala arhiepiscopală. Prima ca importanță!','Lucrările au început în 1991 și are 58 de metri. Are chiar și adăpost antiatomic!']),
   {land:'sfTreime',w:150,doors:[{dx:25,loc:'sfTreime'}]},
   npc('Nea Fane, pescarul',Hm({skin:'#c98a5a',hair:'chel',shirt:{c:'#6b7445'},pants:{c:'#3d3d4a'},shoes:{c:'#2f6f38'},acc:{cap:'#6b7445',mustache:'#d0d0d8'}}),['Șșșt, sperii peștii. Deși, sincer, pe aici sunt mai mulți porumbei decât pești.','Bănci? Peste tot în jurul lacului. Le-am testat pe toate.','Seara se aprind luminile în jurul lacului și e frumos de tot. Legenda zice că pe fund zac sute de portofele. Eu am prins trei, goale.']),

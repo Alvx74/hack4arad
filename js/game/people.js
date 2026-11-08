@@ -156,14 +156,24 @@ function drawNPCraw(d,x,y,fr,face,t){
   case 'ghost':{const fl=Math.round(Math.sin(t/18)*2);const gy=y-4+fl;
     R(x-6,gy-20,12,18,'#eef0fb');R(x-5,gy-22,10,2,'#eef0fb');R(x-3,gy-23,6,1,'#eef0fb');for(let i=0;i<6;i++)R(x-6+i*2,gy-2,1,2,'#eef0fb');R(x-6,gy-20,1,16,'#cfd3ea');
     const ex=f>0?x-1:x-4;R(ex,gy-16,2,3,'#1b1424');R(ex+4,gy-16,2,3,'#1b1424');R(f>0?x+1:x-2,gy-10,2,2,'#1b1424');R(ex-1,gy-12,1,1,'#f0a0a0');R(ex+6,gy-12,1,1,'#f0a0a0');break;}
+  case 'spirit':drawSpirit(d,x,y,face,t);break;
   default:drawPerson(x,y,d,fr,face);
   }
 }
 function shadowAt(x,y){R(Math.round(x)-6,Math.round(y),12,1,'rgba(0,0,0,.28)');}
-function drawNPC(d,x,y,fr,face,t=0){if(d.kind!=='ghost')shadowAt(x,y);outlined((lx,ly)=>drawNPCraw(d,lx,ly,fr,face,t),x,y);
+/* the street's patron as a ghost: pale, floating, a wisp instead of legs;
+   d.body is a normal person look (pale colours), d.extra draws what drawPerson can't (hats, goggles...) */
+function drawSpirit(d,x,y,face,t){const f=face>0?1:-1;const fl=Math.round(Math.sin(t/16)*2);const yy=y-5+fl;
+  const o=drawPerson(x,yy,d.body,0,face);
+  const wc=d.wisp||'#dfe8ff',sw=Math.round(Math.sin(t/10));
+  for(let r=0;r<10;r++){const w=Math.max(2,10-r);R(x-Math.ceil(w/2)+(r>4?sw*-f:0),yy-6+r,w,1,r%3===2?shade(wc,-14):wc);}
+  if(d.extra)d.extra(x,o.hy,o.ty,f);
+  for(let i=0;i<3;i++){const a=t/22+i*2.1;const sx=x+Math.round(Math.cos(a)*10),sy=yy-14+Math.round(Math.sin(a*1.3)*9);if(((t>>3)+i)%3)R(sx,sy,1,1,'#ffffff');}}
+function drawNPC(d,x,y,fr,face,t=0){if(d.kind==='spirit'){const a=C.globalAlpha;C.globalAlpha=0.86;outlined((lx,ly)=>drawNPCraw(d,lx,ly,fr,face,t),x,y);C.globalAlpha=a;return;}
+  if(d.kind!=='ghost')shadowAt(x,y);outlined((lx,ly)=>drawNPCraw(d,lx,ly,fr,face,t),x,y);
 }
 function drawChar(L,x,y,fr,face){shadowAt(x,y);outlined((lx,ly)=>drawPerson(lx,ly,L,fr,face),x,y);}
 function Hm(o){const d={kind:'human',skin:'#e0a878',hair:'scurt',hairC:'#3a2a20',shirt:{c:'#4a7bd0'},pants:{c:'#2f3a5a'},shoes:{c:'#222'},acc:{}};return Object.assign(d,o);}
 const GUIDE=Hm({hair:'scurt',hairC:'#6b4226',shirt:{c:'#3fb36a'},pants:{c:'#2f3a5a'},acc:{cap:'#f5c400',badge:1}});
 
-export { COST, GUIDE, Hm, OC, OX, SCn, SX, drawChar, drawNPC, drawNPCraw, drawPerson, faceDraw, hairDraw, hood, outlined, shadowAt };
+export { COST, GUIDE, Hm, drawSpirit, OC, OX, SCn, SX, drawChar, drawNPC, drawNPCraw, drawPerson, faceDraw, hairDraw, hood, outlined, shadowAt };

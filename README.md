@@ -105,6 +105,8 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 
 A pixel-art side-scroller through the three routes: dress your character in the wardrobe, pick a route on the stylised map, walk the street, talk to locals and answer three questions per place to earn its badge (at least 2 correct). Keyboard: ← → / A D walk, Shift run, E talk or enter, M map, 1–4 answer. Phones and tablets get touch buttons.
 
+At the start of each route a ghost of the person the street is named after (General Ion Dragalina, Avram Iancu, Aurel Vlaicu) tells who they were, why they matter to Arad and why the street carries their name.
+
 It is loaded only when the tile is opened, and pauses (no drawing loop, no keyboard listeners) when you leave the screen. Progress is saved in the browser under `aradPixelat_v2`.
 
 ```
@@ -118,6 +120,7 @@ js/game/outfit.js      wardrobe options and the saved progress
 js/game/locations.js   the 20 places and the game's own questions
 js/game/landmarks.js   the buildings, drawn from photos
 js/game/streets.js     the three routes as walkable streets
+js/game/patrons.js     the ghosts at the start of each route: Dragalina, Avram Iancu, Aurel Vlaicu
 js/game/interiors.js   rooms you can walk into
 ```
 
