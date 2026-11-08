@@ -101,6 +101,18 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 - `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
 - After sign-in the dashboard has two tiles: **Vizionare pe viu** (GPS map) and **Joc interactiv** (the game below).
 
+## Ghizi locali (chat)
+
+The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with the guide → **Selectează o oră**. The guide answers 50/50: busy, or "Super! Vom începe turul la …" with the end time. It is a demo: nothing is sent or booked. Code in `js/guides.js`, styles in `css/guides.css`, photos in `assets/guides/`.
+
+Tour length (side quests not included): the walking distance between the route's stops on real streets (OSRM foot router), walked at a guided-group pace of 3.5 km/h, plus 10 minutes at each stop.
+
+| Route | Stops | Distance | Time |
+|---|---|---|---|
+| Traseul 1 | 7 | 2,06 km | 1 h 46 min |
+| Traseul 2 | 7 | 2,23 km | 1 h 49 min |
+| Traseul 3 | 6 | 2,83 km | 1 h 49 min |
+
 ## Joc interactiv: Aradul Pixelat
 
 A pixel-art side-scroller through the three routes: dress your character in the wardrobe, pick a route on the stylised map, walk the street, talk to locals and answer three questions per place to earn its badge (at least 2 correct). Keyboard: ← → / A D walk, Shift run, E talk or enter, M map, 1–4 answer. Phones and tablets get touch buttons.
