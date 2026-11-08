@@ -13,6 +13,7 @@ import { confetti } from './confetti.js';
 import { loadLeaderboard, renderLeaderboard, setSort, myStanding } from './leaderboard.js';
 import { startSky, stopSky } from './sky.js';
 import { startTour, next as tourNext, skip as tourSkip } from './tour.js';
+import { initGuides } from './guides.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1089,6 +1090,7 @@ async function boot() {
     S.sidequests = trail.sidequests;
     S.sidequestIds = trail.sidequests.map(q => q.id);
     S.byId = new Map(trail.places.map(p => [p.id, p]));
+    initGuides({ routes: () => S.routes, place: id => S.byId.get(id) });
   } catch (e) {
     console.error(e);
     $('#fatalMsg').textContent = location.protocol === 'file:'

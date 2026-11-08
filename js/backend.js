@@ -10,7 +10,8 @@ export function backend() {
       import('../database/auth.js'),
       import('../database/profiles.js'),
       import('../database/scores.js'),
-    ]).then(([auth, profiles, scores]) => ({ ...auth, ...profiles, ...scores }));
+      import('../database/guide-chat.js'),
+    ]).then(([auth, profiles, scores, chat]) => ({ ...auth, ...profiles, ...scores, ...chat }));
     loading.catch(() => { loading = null; });   // allow a retry later
   }
   return loading;

@@ -101,6 +101,41 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 - `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
 - After sign-in the dashboard has two tiles: **Vizionare pe viu** (GPS map) and **Joc interactiv** (the game below).
 
+## Ghizi locali (chat with Grok)
+
+The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with that guide. The guide writes first, introduces themself and suggests the hours they are free (two today if there's still time, two tomorrow; also shown as quick-reply chips); the player writes anything in the text box. The guide confirms a time with the end time, or says they're busy and suggests their free hours. It is a demo: nothing is really booked.
+
+The answers come from an AI model through a Supabase Edge Function, `supabase/functions/guide-chat`: **Google Gemini (free tier)** when the secret `GEMINI_API_KEY` is set (key from https://aistudio.google.com/apikey, model `gemini-flash-latest`, change with `GEMINI_MODEL`), otherwise **Grok (xAI, paid)** with `XAI_API_KEY` (`GROK_MODEL`, default `grok-latest`). Free-tier Gemini prompts may be used by Google to improve its products, so don't type personal data in the chat. The key is a Supabase secret and never reaches the browser or this repository. Each guide's name and personality are defined in that function (on the server):
+
+| Guide | Personality |
+|---|---|
+| Gheorghe Ardelean, 63 | retired historian, calm and a little solemn, precise dates and anecdotes |
+| Andrei Bălan, 38 | energetic storyteller, jokes, Arad's legends, the odd emoji |
+| Ioana Crișan, 31 | architect, organised, façades and building styles |
+| Radu Popa, 34 | relaxed, friendly, short answers, a bit of English |
+| Dan Mureșan, 56 | hiker and nature lover, the Mureș bank and parks, practical tips |
+
+**One-time setup** (needs the [Supabase CLI](https://supabase.com/docs/guides/cli) and access to the project):
+
+```bash
+supabase login
+supabase functions deploy guide-chat --project-ref scplcjroxictdslyrfez
+supabase secrets set GEMINI_API_KEY=<key from aistudio.google.com/apikey> --project-ref scplcjroxictdslyrfez
+# or, paid: supabase secrets set XAI_API_KEY=<Grok key> --project-ref scplcjroxictdslyrfez
+```
+
+Or in the dashboard: *Edge Functions → Deploy a new function → Via Editor* with the contents of `index.ts`, and *Edge Functions → Secrets* → `GEMINI_API_KEY` (or `XAI_API_KEY`). It is currently deployed as **`rapid-handler`**; the name the site calls is `FUNCTION_NAME` in `database/guide-chat.js`. Only signed-in players can call it. Until it is deployed, the chat shows "Chatul cu ghizii nu este încă activat pe server." Never put the key in the site's code: the repository and the site are public.
+
+Code: `js/guides.js` (the app), `database/guide-chat.js` (calls the function), `css/guides.css`, photos in `assets/guides/`.
+
+Tour length (side quests not included): the walking distance between the route's stops on real streets (OSRM foot router), walked at a guided-group pace of 3.5 km/h, plus 10 minutes at each stop.
+
+| Route | Stops | Distance | Time |
+|---|---|---|---|
+| Traseul 1 | 7 | 2,06 km | 1 h 46 min |
+| Traseul 2 | 7 | 2,23 km | 1 h 49 min |
+| Traseul 3 | 6 | 2,83 km | 1 h 49 min |
+
 ## Joc interactiv: Aradul Pixelat
 
 A pixel-art side-scroller through the three routes: dress your character in the wardrobe, pick a route on the stylised map, walk the street, talk to locals and answer three questions per place to earn its badge (at least 2 correct). Keyboard: ← → / A D walk, Shift run, E talk or enter, M map, 1–4 answer. Phones and tablets get touch buttons.
