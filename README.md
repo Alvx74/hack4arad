@@ -125,7 +125,7 @@ supabase secrets set XAI_API_KEY=<the Grok API key> --project-ref scplcjroxictds
 supabase secrets set GROK_MODEL=grok-latest --project-ref scplcjroxictdslyrfez
 ```
 
-Or in the dashboard: *Edge Functions → Deploy a new function* named `guide-chat` with the contents of `index.ts`, and *Edge Functions → Secrets* → `XAI_API_KEY`. Only signed-in players can call it. Until it is deployed, the chat shows "Chatul cu ghizii nu este încă activat pe server." Never put the key in the site's code: the repository and the site are public.
+Or in the dashboard: *Edge Functions → Deploy a new function → Via Editor* with the contents of `index.ts`, and *Edge Functions → Secrets* → `XAI_API_KEY`. It is currently deployed as **`rapid-handler`**; the name the site calls is `FUNCTION_NAME` in `database/guide-chat.js`. Only signed-in players can call it. Until it is deployed, the chat shows "Chatul cu ghizii nu este încă activat pe server." Never put the key in the site's code: the repository and the site are public.
 
 Code: `js/guides.js` (the app), `database/guide-chat.js` (calls the function), `css/guides.css`, photos in `assets/guides/`.
 
