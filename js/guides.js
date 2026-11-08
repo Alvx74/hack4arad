@@ -5,7 +5,7 @@
 // Flow: round button → intro card ("Înapoi" / "Doresc un ghid") → the guides
 // listed like a messenger while a loader searches ~5 s → one guide is picked →
 // choose Traseul 1, 2 or 3 → chat with the guide → "Selectează o oră" →
-// the guide answers 50/50: busy, or confirms the start and end time.
+// the guide accepts 75% of the time (start and end time), otherwise says they're busy.
 // Everything here is a demo: nothing is sent anywhere.
 
 /* ---------- guides ---------- */
@@ -31,6 +31,7 @@ export function tourMinutes(routeId, stops) {
 
 /* ---------- helpers ---------- */
 const SEARCH_MS = 5000;
+const ACCEPT_CHANCE = 0.75;   // how often the guide is free at the chosen hour
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const km = m => (m / 1000).toFixed(1).replace('.', ',') + ' km';
 const dur = min => (min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min` : `${min} min`);
@@ -176,7 +177,7 @@ async function askTime() {
   await sleep(1300 + Math.random() * 700);
   if (my !== run) return;
   typing.remove();
-  if (Math.random() < 0.5) {
+  if (Math.random() >= ACCEPT_CHANCE) {
     say('them', `Sunt ocupat${guide.fem ? 'ă' : ''} în acest interval orar.`);
     say('them', 'Poți alege altă oră?');
   } else {

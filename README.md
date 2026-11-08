@@ -103,7 +103,7 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 
 ## Ghizi locali (chat)
 
-The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with the guide → **Selectează o oră**. The guide answers 50/50: busy, or "Super! Vom începe turul la …" with the end time. It is a demo: nothing is sent or booked. Code in `js/guides.js`, styles in `css/guides.css`, photos in `assets/guides/`.
+The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with the guide → **Selectează o oră**. The guide accepts 3 times out of 4 (`ACCEPT_CHANCE = 0.75` in `js/guides.js`); otherwise they are busy at that hour. On accepting: "Super! Vom începe turul la …" with the end time. It is a demo: nothing is sent or booked. Code in `js/guides.js`, styles in `css/guides.css`, photos in `assets/guides/`.
 
 Tour length (side quests not included): the walking distance between the route's stops on real streets (OSRM foot router), walked at a guided-group pace of 3.5 km/h, plus 10 minutes at each stop.
 
