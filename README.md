@@ -70,7 +70,7 @@ To add a question, add an object to that place's `trivia` array with `q`, `o` (a
 - Finishing the last stop of a route opens a congratulations screen (confetti, stops visited, correct answers) with "Începe un traseu nou", which opens the route picker.
 
 - After sign-in, the player chooses one of the three routes. Directions point at the first unfinished stop on that selected route.
-- A main-route stop is discovered when you're within the interaction radius (60 m by default; the testing slider goes up to 300 m, see `js/config.js`). Side quests are always on the map as unnamed gold stars; their name, story and questions (and their entry in the list) only appear while you are within that radius. They can be done in any order and don't move the main route on.
+- A main-route stop is discovered when you're within the interaction radius (72 m by default; the testing slider goes up to 300 m, see `js/config.js`). Side quests are always on the map as unnamed gold stars; their name, story and questions (and their entry in the list) only appear while you are within that radius. They can be done in any order and don't move the main route on.
 - The chosen route is remembered per account on the device; "Schimbă traseul" in the account menu opens the route picker again.
 - The trail only moves on once that stop's trivia has been answered to the end; the route then switches to the next stop automatically.
 - Walking directions start from wherever you are: a dotted line leads to the nearest street, then the solid line follows streets. The route is planned once and followed; it is only re-planned when you stray from it (35–90 m depending on GPS accuracy).
