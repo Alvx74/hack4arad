@@ -137,7 +137,7 @@ export const auth = {
     const b = await api();
     try { await b.signInWithGoogle(returnUrl()); }
     catch (e) {
-      if (/provider is not enabled|unsupported provider/i.test(String(e && e.message))) throw new Error('Conectarea cu Google nu este activată încă pe server.');
+      if ((e && e.code === 'provider_disabled') || /provider is not enabled|unsupported provider/i.test(String(e && e.message))) throw new Error('Conectarea cu Google nu este activată încă în Supabase (Authentication → Providers → Google).');
       throw new Error(translate(e));
     }
   },

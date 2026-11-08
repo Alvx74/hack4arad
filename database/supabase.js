@@ -2,9 +2,9 @@ import { createClient } from
     'https://esm.sh/@supabase/supabase-js@2';
 
 // Project URL only: supabase-js adds /auth/v1, /rest/v1 ... itself.
-const SUPABASE_URL = 'https://scplcjroxictdslyrfez.supabase.co';
+export const SUPABASE_URL = 'https://scplcjroxictdslyrfez.supabase.co';
 // Publishable (public) key: safe in the browser, access is limited by Row Level Security.
-const SUPABASE_KEY = 'sb_publishable_8TMINrdD634yA-Tls7TWjQ_jGHzkz8t';
+export const SUPABASE_KEY = 'sb_publishable_8TMINrdD634yA-Tls7TWjQ_jGHzkz8t';
 
 export const supabase = createClient(
     SUPABASE_URL,

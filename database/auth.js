@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js';
+import { supabase, SUPABASE_URL, SUPABASE_KEY } from './supabase.js';
 
 
 // REGISTER
@@ -42,17 +42,42 @@ export async function signIn(email, password) {
 // GOOGLE: leaves the page for Google's account picker and comes back to
 // redirectTo signed in (detectSessionInUrl finishes it). The same call creates
 // the account the first time, so it serves as both sign up and log in.
+//
+// Before leaving, it asks Supabase whether Google is switched on: if it isn't,
+// Supabase would only show a bare "400 provider is not enabled" page, so we
+// throw instead and the sign-in card shows a readable message.
 export async function signInWithGoogle(redirectTo) {
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    if (await isProviderEnabled('google') === false) {
+        const e = new Error('Unsupported provider: provider is not enabled');
+        e.code = 'provider_disabled';
+        throw e;
+    }
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
             redirectTo,
-            queryParams: { prompt: 'select_account' }
+            queryParams: { prompt: 'select_account' },
+            skipBrowserRedirect: true
         }
     });
 
     if (error) throw error;
+
+    location.assign(data.url);
+}
+
+// true / false from the project's public auth settings; null if unknown (offline).
+async function isProviderEnabled(provider) {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_KEY } });
+        if (!res.ok) return null;
+        const s = await res.json();
+        return !!(s.external && s.external[provider]);
+    } catch {
+        return null;
+    }
 }
 
 
