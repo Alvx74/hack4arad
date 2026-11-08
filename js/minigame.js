@@ -1,16 +1,24 @@
-// Minigame placeholder.
+// Joc interactiv: the "Aradul Pixelat" game (js/game/).
 //
-// The header button "Minijoc" opens the #minigame screen and calls
-// mountMinigame(root, ctx); leaving the screen calls unmountMinigame().
-// Build the game inside `root` (a <div> in index.html). `ctx` gives
-// read-only info about the player and trail, e.g. to unlock levels per stop.
-//
-//   ctx = { user: { id, name }, places: [...], completed: ['college', ...] }
-//
-// Nothing is implemented yet; the placeholder text in index.html stays visible.
+// The dashboard tile opens the #minigame screen and calls mountMinigame(root);
+// leaving the screen calls unmountMinigame(). The game code is loaded only the
+// first time it is opened, so the map part of the site stays light.
 
-export function mountMinigame(root, ctx) {
-  void root; void ctx;
+let game = null, wanted = false;
+
+export async function mountMinigame(root) {
+  wanted = true;
+  try {
+    game = game || await import('./game/index.js');
+  } catch (e) {
+    console.error('[minigame]', e);
+    root.innerHTML = '<div class="mg-empty"><h2>Jocul nu s-a încărcat</h2><p class="muted">Reîncarcă pagina și încearcă din nou.</p></div>';
+    return;
+  }
+  if (wanted) game.mount(root);   // the player may have left while it was loading
 }
 
-export function unmountMinigame() {}
+export function unmountMinigame() {
+  wanted = false;
+  if (game) game.unmount();
+}

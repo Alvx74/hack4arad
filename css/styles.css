@@ -215,7 +215,7 @@ body:not([data-screen="welcome"]) .brand span { display: none; }
 .dash-cards { display: grid; gap: 18px; }
 .dash-card {
   --c: var(--red);
-  position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-height: 31vh; container-type: inline-size;
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-height: max(31vh, 270px); container-type: inline-size;
   padding: 20px; text-align: left; overflow: hidden; cursor: pointer; touch-action: manipulation;
   background: var(--c); color: #fff; border: 3px solid #fff; outline: 3px solid var(--c); border-radius: var(--r-lg); font: inherit;
   transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0)) scale(var(--sc, 1));
@@ -384,7 +384,6 @@ input[type=range] { width: 100%; accent-color: var(--blue); }
 .val { min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 900; }
 
 /* minigame placeholder */
-.mg-stage { min-height: clamp(360px, 60vh, 600px); border: var(--bw) dashed var(--edge); border-radius: var(--r-lg); display: grid; place-items: center; }
 .mg-empty { text-align: center; padding: 24px; }
 .mg-empty h2 { font-size: 2.2rem; text-transform: uppercase; margin: 4px 0 8px; }
 

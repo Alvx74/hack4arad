@@ -1,0 +1,90 @@
+/* =====================================================================
+   Aradul Pixelat (Joc interactiv)
+   The frame around the game (title, HUD, screen border, touch buttons)
+   uses the site's own classes and tokens from styles.css. Only the pixel
+   panel under the screen keeps the game's look; its classes all start
+   with "ap-" so they never collide with the site's.
+   ===================================================================== */
+.ap {
+  --ap-ground: #16121f; --ap-shell-hi: #3a2f52; --ap-win: #14213a; --ap-win-edge: #e9e4ff;
+  --ap-ink: #f4f0ff; --ap-muted: #a9a1c8; --ap-gold: #ffc94a; --ap-ok: #5fd38a; --ap-bad: #ff7a7a;
+  --f-display: "Pixelify Sans", "Courier New", monospace; --f-body: "VT323", "Courier New", monospace;
+  display: grid; gap: 14px; max-width: 960px; margin: 0 auto; min-width: 0;
+}
+
+/* ---------- frame: site theme ---------- */
+.ap-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.ap-top .btn { flex: none; }
+.ap-top .kicker { margin-bottom: 2px; }
+.ap-title { font-size: clamp(1.5rem, 7vw, 2.6rem); text-transform: uppercase; letter-spacing: -.02em; }
+.ap-hud { margin-top: 0; }
+.ap-key { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; margin-left: 4px; border: 1.5px solid currentColor; border-radius: 6px; font: 700 .75rem var(--mono); }
+.ap-screen { position: relative; aspect-ratio: 16 / 9; width: 100%; overflow: hidden; background: #000;
+  border: var(--bw) solid var(--edge); border-radius: var(--r-lg); }
+#cv { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; touch-action: manipulation; }
+
+/* touch buttons (phones and tablets only) */
+/* stuck to the bottom of the screen so they stay under the thumbs while the panel scrolls */
+.ap-pad { display: none; justify-content: space-between; gap: 10px; user-select: none; -webkit-user-select: none;
+  position: sticky; bottom: 0; z-index: 5; margin: 0 -16px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: var(--glass-strong); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-top: var(--bw) solid var(--edge); }
+.ap-pad .ap-grp { display: flex; gap: 10px; }
+.ap-pad .btn { min-width: 64px; min-height: 60px; padding: 8px 14px; font-size: 1.15rem; touch-action: none; }
+.ap-pad .btn.on { background: var(--text); color: var(--on-text); border-color: var(--on-text); outline: var(--bw) solid var(--text); }
+@media (pointer: coarse) { .ap-pad { display: flex; } }
+
+/* ---------- the game's own pixel panel (unchanged look) ---------- */
+.ap-panel { font-family: var(--f-body); font-size: 21px; line-height: 1.15; color: var(--ap-ink);
+  background: var(--ap-win); border: 3px solid var(--ap-win-edge); box-shadow: inset 0 0 0 3px #0a1325, 8px 8px 0 #000;
+  padding: 12px 16px; min-height: 150px; min-width: 0; margin-right: 8px; }
+.ap-panel h2 { font-family: var(--f-display); font-size: 20px; line-height: 1.15; letter-spacing: 0; margin: 0 0 6px; color: var(--ap-gold); font-weight: 700; text-wrap: balance; text-transform: none; }
+.ap-panel p { margin: 0 0 6px; }
+.ap-panel kbd { font-family: var(--f-display); font-size: 13px; border: 2px solid var(--ap-muted); padding: 0 5px; margin: 0 2px; background: #0a1325; color: var(--ap-ink); }
+.ap-panel button:focus-visible { outline: 3px solid var(--ap-gold) !important; outline-offset: 2px !important; }
+.ap-muted { color: var(--ap-muted); }
+.ap-btn { font-family: var(--f-display); font-size: 15px; font-weight: 600; background: var(--ap-shell-hi); color: var(--ap-ink); border: 2px solid var(--ap-win-edge);
+  padding: 7px 12px; cursor: pointer; box-shadow: 3px 3px 0 #000; border-radius: 0; }
+.ap-btn:hover { background: #4c3e6e; }
+.ap-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+.ap-btn.ap-gold { background: var(--ap-gold); color: #2a1630; border-color: #fff3c4; }
+.ap-btn.ap-gold:hover { background: #ffd76e; }
+.ap-dlg { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; cursor: pointer; }
+.ap-port { width: 84px; height: 90px; image-rendering: pixelated; border: 3px solid var(--ap-win-edge); background: #2b3b5c; }
+.ap-dlg-body { min-width: 0; }
+.ap-dname { font-family: var(--f-display); font-weight: 700; color: var(--ap-gold); font-size: 18px; margin-bottom: 4px; }
+.ap-dtext { font-size: 24px; min-height: 3.4em; margin: 0; }
+.ap-dnext { color: var(--ap-muted); font-size: 18px; margin-top: 6px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ap-blink { animation: ap-bl 1s steps(2) infinite; }
+@keyframes ap-bl { 50% { opacity: 0; } }
+.ap-qhead { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-family: var(--f-display); font-size: 15px; color: var(--ap-muted); margin-bottom: 4px; }
+.ap-qtext { font-size: 25px; margin: 2px 0 10px; }
+.ap-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 8px; }
+.ap-opt { text-align: left; font-family: var(--f-body); font-size: 22px; background: #1f3155; color: var(--ap-ink); border: 2px solid #6f7fb0; padding: 6px 10px; cursor: pointer; box-shadow: 3px 3px 0 #000; }
+.ap-opt:hover:not(:disabled) { background: #2a4170; border-color: var(--ap-win-edge); }
+.ap-opt .ap-k { font-family: var(--f-display); color: var(--ap-gold); margin-right: 8px; }
+.ap-opt.ap-right { background: #1f5a3b; border-color: var(--ap-ok); }
+.ap-opt.ap-wrong { background: #5d2330; border-color: var(--ap-bad); }
+.ap-opt:disabled { cursor: default; }
+.ap-fb { margin: 10px 0 0; font-size: 22px; min-height: 1.2em; }
+.ap-fb.ap-ok { color: var(--ap-ok); } .ap-fb.ap-no { color: var(--ap-bad); }
+.ap-row-end { display: flex; justify-content: flex-end; margin-top: 8px; gap: 8px; flex-wrap: wrap; }
+.ap-cgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 8px 18px; margin: 6px 0 10px; }
+.ap-crow { display: grid; grid-template-columns: 6.5em 40px minmax(0, 1fr) 40px; align-items: center; gap: 6px; padding: 2px 4px; border: 2px solid transparent; }
+.ap-crow.ap-sel { border-color: var(--ap-gold); background: #1d2e50; }
+.ap-crow .ap-lab { color: var(--ap-muted); }
+.ap-crow .ap-val { text-align: center; font-size: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-arrow { font-family: var(--f-display); font-size: 16px; width: 40px; height: 34px; background: var(--ap-shell-hi); color: var(--ap-ink); border: 2px solid var(--ap-win-edge); cursor: pointer; box-shadow: 2px 2px 0 #000; }
+.ap-arrow:active { transform: translate(1px, 1px); }
+.ap-streets { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 10px; margin: 8px 0; }
+.ap-st { text-align: left; font-family: var(--f-body); font-size: 19px; background: #1d2b4b; color: var(--ap-ink); border: 2px solid #6f7fb0; padding: 8px 10px; cursor: pointer; box-shadow: 3px 3px 0 #000; display: flex; flex-direction: column; gap: 3px; }
+.ap-st b { font-family: var(--f-display); font-size: 16px; color: var(--ap-gold); }
+.ap-st i { font-style: normal; color: var(--ap-muted); }
+.ap-st.ap-sel { border-color: var(--ap-gold); background: #2a3c66; }
+.ap-st .ap-stars { color: var(--ap-muted); font-size: 18px; }
+.ap-note { font-size: 18px; color: var(--ap-muted); border-top: 2px dashed #3d4c78; padding-top: 6px; margin-top: 6px; }
+@media (max-width: 560px) {
+  .ap-panel { font-size: 19px; }
+  .ap-dtext { font-size: 21px; } .ap-qtext { font-size: 22px; } .ap-opt { font-size: 20px; }
+  .ap-port { width: 56px; height: 60px; }
+}
+@media (prefers-reduced-motion: reduce) { .ap-blink { animation: none; } }

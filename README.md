@@ -41,7 +41,9 @@ js/data.js              loads and validates the CSV database
 js/csv.js               CSV parser
 js/map.js               Leaflet map wrapper (pins, route line, user dot)
 js/routing.js           walking directions (OSRM)
-js/minigame.js          minigame placeholder (mountMinigame / unmountMinigame)
+js/minigame.js          loads the game (js/game/) the first time "Joc interactiv" is opened
+js/game/                Aradul Pixelat, the pixel-art side-scroller (see below)
+css/game.css            the game's frame and panel styles
 js/photos.js            photo lookup (own photo → CSV photo → Wikipedia placeholder)
 js/geo.js               distance and formatting helpers
 data/game-data.json     three selectable routes, 31 locations, trivia and 10 side quests
@@ -97,7 +99,29 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 
 - `js/sky.js`: the login background, drifting "constellations" that react to the mouse or finger (one still frame if the device asks for reduced motion).
 - `js/tour.js`: the walkthrough shown the first time a player opens **Vizionare pe viu**; "Cum se joacă" in the account menu replays it.
-- After sign-in the dashboard has two tiles: **Vizionare pe viu** (GPS map) and **Joc interactiv** (minigame).
+- After sign-in the dashboard has two tiles: **Vizionare pe viu** (GPS map) and **Joc interactiv** (the game below).
+
+## Joc interactiv: Aradul Pixelat
+
+A pixel-art side-scroller through the three routes: dress your character in the wardrobe, pick a route on the stylised map, walk the street, talk to locals and answer three questions per place to earn its badge (at least 2 correct). Keyboard: ← → / A D walk, Shift run, E talk or enter, M map, 1–4 answer. Phones and tablets get touch buttons.
+
+It is loaded only when the tile is opened, and pauses (no drawing loop, no keyboard listeners) when you leave the screen. Progress is saved in the browser under `aradPixelat_v2`.
+
+```
+js/game/index.js       mount(root) / unmount(): builds the screen, loads the two pixel fonts
+js/game/game.js        state, panels (wardrobe, map, hints, dialogue, quiz), input, loop
+js/game/core.js        canvas size and the shared drawing target / frame counter
+js/game/font.js        3×5 pixel font for text drawn on the canvas
+js/game/draw.js        windows, roofs, trees, lamps and other small drawing helpers
+js/game/people.js      characters, costumes and NPCs
+js/game/outfit.js      wardrobe options and the saved progress
+js/game/locations.js   the 20 places and the game's own questions
+js/game/landmarks.js   the buildings, drawn from photos
+js/game/streets.js     the three routes as walkable streets
+js/game/interiors.js   rooms you can walk into
+```
+
+The title, HUD, screen frame and touch buttons use the site's theme; the panel under the screen keeps the game's own pixel look. The game keeps its own question texts (`locations.js`), separate from `data/game-data.json`.
 
 ## Photos
 

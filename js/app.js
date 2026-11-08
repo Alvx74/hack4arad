@@ -1023,7 +1023,7 @@ function bindEvents() {
         break;
       case 'minigame':
         closeSheet(); showScreen('minigame');
-        mountMinigame($('#minigameRoot'), { user: S.user, places: S.places, completed: [...S.prog.completed] });
+        mountMinigame($('#minigameRoot'));
         break;
       case 'backtomap': showScreen('app'); map && map.refresh(); break;
       case 'authmode': setAuthMode(el.dataset.mode); break;

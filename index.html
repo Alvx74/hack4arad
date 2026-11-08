@@ -13,6 +13,7 @@
 <!-- Map library (kept locally in vendor/ so the app does not depend on a CDN) -->
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/game.css">
 <script>
   // Apply the saved theme before the page paints (no light flash in dark mode).
   try { var t = localStorage.getItem('arad-explorer:theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch (e) {}
@@ -141,8 +142,8 @@
           <svg viewBox="0 0 120 120"><rect class="dg-pad" x="14" y="38" width="92" height="50"/><path class="dg-cross" d="M36 52v22M25 63h22"/><rect class="dg-a" x="74" y="54" width="9" height="9"/><rect class="dg-b" x="86" y="64" width="9" height="9"/></svg>
         </span>
         <span class="dash-title">Joc<br>interactiv</span>
-        <span class="dash-desc">Un joc 2D prin locurile Aradului.</span>
-        <span class="dash-go">În curând →</span>
+        <span class="dash-desc">Aradul Pixelat: plimbă-te prin oraș și câștigă insigne.</span>
+        <span class="dash-go">Joacă →</span>
       </button>
     </div>
   </div>
@@ -291,18 +292,12 @@
   <div class="m-backdrop" data-act="panel" data-panel=""></div>
 </main>
 
-<!-- ============ MINIJOC (placeholder) ============ -->
+<!-- ============ JOC INTERACTIV: Aradul Pixelat (js/game/) ============ -->
 <section id="minigame" class="screen" hidden>
   <div class="wrap">
     <div><button class="btn sm" data-act="home">← Înapoi la panou</button></div>
     <!-- js/minigame.js mounts the game into this element -->
-    <div class="mg-stage" id="minigameRoot">
-      <div class="mg-empty">
-        <p class="kicker">Minijoc</p>
-        <h2>În curând</h2>
-        <p class="muted">Aici va apărea minijocul. Încă nu este gata.</p>
-      </div>
-    </div>
+    <div id="minigameRoot"><p class="muted">Se încarcă jocul…</p></div>
   </div>
 </section>
 
