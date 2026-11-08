@@ -1,20 +1,27 @@
 // @ts-nocheck  (plain JavaScript in a .ts file so it also runs in the tests)
-// Supabase Edge Function "guide-chat": lets the guides in the "Ghizi locali"
-// chat answer with Grok (xAI). The API key never reaches the browser: it is a
-// Supabase secret (XAI_API_KEY) read here on the server.
+// Supabase Edge Function "guide-chat" (deployed as "rapid-handler"): lets the
+// guides in the "Ghizi locali" chat answer with an AI model. The API key never
+// reaches the browser: it is a Supabase secret read here on the server.
 //
-// Deploy (once):
-//   supabase functions deploy guide-chat --project-ref scplcjroxictdslyrfez
-//   supabase secrets set XAI_API_KEY=<your key> --project-ref scplcjroxictdslyrfez
-//   (optional) supabase secrets set GROK_MODEL=grok-latest
+// Which AI it uses depends on the secret that is set:
+//   GEMINI_API_KEY  Google Gemini, free tier (key from aistudio.google.com/apikey)
+//                   optional GEMINI_MODEL, default gemini-flash-latest
+//   XAI_API_KEY     Grok (xAI), paid; optional GROK_MODEL, default grok-latest
+// If both are set, Gemini is used.
 //
 // Only signed-in players can call it (Supabase checks their login token).
 //
 // Request  { guideId, route: { name, stops: [names], km, minutes }, slots: ["Azi 10:00", ...], messages: [{ role: "user"|"assistant", content }] }
 // Response { reply }
 
-const XAI_URL = 'https://api.x.ai/v1/chat/completions';
-const MODEL = Deno.env.get('GROK_MODEL') || 'grok-latest';
+// Both speak the same "chat completions" format.
+export function provider(env = k => Deno.env.get(k)) {
+  if (env('GEMINI_API_KEY')) return { name: 'gemini', key: env('GEMINI_API_KEY'), model: env('GEMINI_MODEL') || 'gemini-flash-latest',
+    url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions' };
+  if (env('XAI_API_KEY')) return { name: 'grok', key: env('XAI_API_KEY'), model: env('GROK_MODEL') || 'grok-latest',
+    url: 'https://api.x.ai/v1/chat/completions' };
+  return null;
+}
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -78,11 +85,11 @@ export function cleanRequest(body) {
   return { p, route, slots, messages };
 }
 
-export async function handle(req, { key = Deno.env.get('XAI_API_KEY'), fetchFn = fetch } = {}) {
+export async function handle(req, { ai = provider(), fetchFn = fetch } = {}) {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
-  if (!key) return json({ error: 'XAI_API_KEY is not set' }, 500);
+  if (!ai) return json({ error: 'no API key: set GEMINI_API_KEY or XAI_API_KEY' }, 500);
 
   let body;
   try { body = await req.json(); } catch { return json({ error: 'bad json' }, 400); }
@@ -93,16 +100,17 @@ export async function handle(req, { key = Deno.env.get('XAI_API_KEY'), fetchFn =
   const messages = c.messages.length ? c.messages
     : [{ role: 'user', content: '(Vizitatorul tocmai a deschis conversația. Salută-l scurt, prezintă-te și propune-i orele la care ești liber.)' }];
 
-  const res = await fetchFn(XAI_URL, {
+  const res = await fetchFn(ai.url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model: MODEL, temperature: 0.8, max_tokens: 300,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ai.key}` },
+    // generous token limit: some models spend part of it "thinking" before answering
+    body: JSON.stringify({ model: ai.model, temperature: 0.8, max_tokens: 1024,
       messages: [{ role: 'system', content: systemPrompt(c.p, c.route, c.slots) }, ...messages] }),
   });
   if (!res.ok) {
     const detail = clip(await res.text(), 300);
-    console.error('xAI error', res.status, detail);
-    return json({ error: 'grok', status: res.status, detail }, 502);
+    console.error(ai.name, 'error', res.status, detail);
+    return json({ error: ai.name, status: res.status, detail }, 502);
   }
   const data = await res.json();
   const reply = clip(data?.choices?.[0]?.message?.content, 1200).trim();

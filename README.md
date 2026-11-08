@@ -105,7 +105,7 @@ Simple and square: Roboto everywhere (17 px base on phones, 18 px on desktop), l
 
 The red message button in the bottom-right corner (after sign-in) opens a small messaging app: "Ai nevoie de un tur al orașului?" → **Doresc un ghid** shows the five guides like a messenger while it searches for about 5 seconds → one guide is picked at random → choose Traseul 1, 2 or 3 → chat with that guide. The guide writes first, introduces themself and suggests the hours they are free (two today if there's still time, two tomorrow; also shown as quick-reply chips); the player writes anything in the text box. The guide confirms a time with the end time, or says they're busy and suggests their free hours. It is a demo: nothing is really booked.
 
-The answers come from **Grok (xAI)** through a Supabase Edge Function, `supabase/functions/guide-chat`. The API key is a Supabase secret and never reaches the browser or this repository. Each guide's name and personality are defined in that function (on the server):
+The answers come from an AI model through a Supabase Edge Function, `supabase/functions/guide-chat`: **Google Gemini (free tier)** when the secret `GEMINI_API_KEY` is set (key from https://aistudio.google.com/apikey, model `gemini-flash-latest`, change with `GEMINI_MODEL`), otherwise **Grok (xAI, paid)** with `XAI_API_KEY` (`GROK_MODEL`, default `grok-latest`). Free-tier Gemini prompts may be used by Google to improve its products, so don't type personal data in the chat. The key is a Supabase secret and never reaches the browser or this repository. Each guide's name and personality are defined in that function (on the server):
 
 | Guide | Personality |
 |---|---|
@@ -120,12 +120,11 @@ The answers come from **Grok (xAI)** through a Supabase Edge Function, `supabase
 ```bash
 supabase login
 supabase functions deploy guide-chat --project-ref scplcjroxictdslyrfez
-supabase secrets set XAI_API_KEY=<the Grok API key> --project-ref scplcjroxictdslyrfez
-# optional: another model (default grok-latest)
-supabase secrets set GROK_MODEL=grok-latest --project-ref scplcjroxictdslyrfez
+supabase secrets set GEMINI_API_KEY=<key from aistudio.google.com/apikey> --project-ref scplcjroxictdslyrfez
+# or, paid: supabase secrets set XAI_API_KEY=<Grok key> --project-ref scplcjroxictdslyrfez
 ```
 
-Or in the dashboard: *Edge Functions → Deploy a new function → Via Editor* with the contents of `index.ts`, and *Edge Functions → Secrets* → `XAI_API_KEY`. It is currently deployed as **`rapid-handler`**; the name the site calls is `FUNCTION_NAME` in `database/guide-chat.js`. Only signed-in players can call it. Until it is deployed, the chat shows "Chatul cu ghizii nu este încă activat pe server." Never put the key in the site's code: the repository and the site are public.
+Or in the dashboard: *Edge Functions → Deploy a new function → Via Editor* with the contents of `index.ts`, and *Edge Functions → Secrets* → `GEMINI_API_KEY` (or `XAI_API_KEY`). It is currently deployed as **`rapid-handler`**; the name the site calls is `FUNCTION_NAME` in `database/guide-chat.js`. Only signed-in players can call it. Until it is deployed, the chat shows "Chatul cu ghizii nu este încă activat pe server." Never put the key in the site's code: the repository and the site are public.
 
 Code: `js/guides.js` (the app), `database/guide-chat.js` (calls the function), `css/guides.css`, photos in `assets/guides/`.
 
